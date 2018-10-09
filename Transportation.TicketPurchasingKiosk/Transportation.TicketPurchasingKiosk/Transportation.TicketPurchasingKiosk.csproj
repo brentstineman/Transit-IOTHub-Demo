@@ -131,6 +131,12 @@
       <Version>6.0.8</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Transportaion.IoTCore\Transportaion.IoTCore.csproj">
+      <Project>{70cab33d-e5ef-49a2-abe4-2174d77769bb}</Project>
+      <Name>Transportaion.IoTCore</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
