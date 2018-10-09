@@ -24,5 +24,11 @@ namespace Transportation.IoTCore.Tests
             
             Assert.IsTrue(reference.SequenceEqual(answer));
         }
+
+        [TestMethod]
+        public void GetBytes_ThisTestWillFail()
+        {
+            Assert.IsTrue(false);
+        }
     }
 }
