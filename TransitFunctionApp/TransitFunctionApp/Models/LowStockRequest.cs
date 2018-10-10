@@ -11,8 +11,8 @@ namespace TransitFunctionApp.Models
         public string MessageType { get; set; }
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
+        public bool IsLowStock { get; set; }
 
-        public LowStockData LowStockData { get; set; }
 
     }
 }

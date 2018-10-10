@@ -12,6 +12,9 @@ namespace TransitFunctionApp.Models
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
 
-        public IssueTicketData IssueTicketData { get; set; }
+        public string OriginLocation { get; set; }
+        public string DestinationLocation { get; set; }
+        public DateTime DepartureTime { get; set; }
+        public long Price { get; set; }
     }
 }
