@@ -38,7 +38,8 @@ namespace simulated_device
 
                 PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
                 {
-                    DeviceId = new Guid().ToString(),
+                    DeviceId = "rjTest",
+                    //DeviceId = new Guid().ToString(),
                     DeviceType = "Kiosk",
                     MessageType = "Purchase",
                     TransactionId = "123",
@@ -49,7 +50,8 @@ namespace simulated_device
                 // Create JSON message
                 var telemetryDataPoint = new
                 {
-                    DeviceId = new Guid(),
+                    DeviceId = "rjTest",
+                    //DeviceId = new Guid(),
                     deviceType = "Kiosk",
                     MessageType = "",
                     TransactionId = "123",
@@ -69,7 +71,7 @@ namespace simulated_device
                 // Add a custom application property to the message.
                 // An IoT hub can filter on these properties without access to the message body.
                 var messageProperties = message.Properties;
-                messageProperties.Add("deviceId", "testing");
+                messageProperties.Add("deviceId", "rjTest");
 
                 // Send the telemetry message
                 await s_deviceClient.SendEventAsync(message);
