@@ -11,7 +11,15 @@ namespace TransitFunctionApp.Models
         public string MessageType { get; set; }
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
+        public string MethodName { get; set; }
 
-        public IssueTicketData IssueTicketData { get; set; }
+        public string OriginLocation { get; set; }
+        public string DestinationLocation { get; set; }
+        public DateTime DepartureTime { get; set; }
+        public long Price { get; set; }
+        public IssueTicketRequest()
+        {
+            this.MethodName = "ProcessIssueTicketResponse";
+        }
     }
 }

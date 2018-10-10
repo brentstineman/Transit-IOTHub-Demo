@@ -9,5 +9,7 @@ namespace TransitFunctionApp.Models
         string DeviceType { get; set; }
         string MessageType { get; set; }
         string TransactionId { get; set; }
+        string MethodName { get; set; }
+
     }
 }

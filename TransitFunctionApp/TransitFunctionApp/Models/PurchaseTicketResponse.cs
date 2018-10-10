@@ -6,8 +6,9 @@ namespace TransitFunctionApp.Models
 {
     public class PurchaseTicketResponse
     {
-        public bool Approved { get; set; }
-        public string TransactionId { get; set; }
+        public string MethodName { get; set; }
+        public int ResponseTimeoutInSeconds { get; set; }
+        public PurchaseTicketPayload Payload { get; set; }
 
     }
 }
