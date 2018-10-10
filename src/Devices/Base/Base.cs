@@ -5,12 +5,16 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/iothub/device/samples
 
 using System;
+using System.IO;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.FileExtensions;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -18,7 +22,7 @@ namespace Transportation.Demo.Devices.Base
     {
         private static DeviceClient deviceClient;
         
-        private readonly static string connectionString = "HostName=TransportationOneWeekHub.azure-devices.net;DeviceId=BenDevice;SharedAccessKey=W2HdWm8wKlosvB0tR2oKyV7FQ4vLfjjue9SXlQgikwM=";
+        private readonly static string connectionString = getConfig("AppSettings","IoTConnectionString");
 
         private static int telemetryInterval = 1; // Seconds
 
@@ -89,6 +93,21 @@ namespace Transportation.Demo.Devices.Base
             SendDeviceToCloudMessagesAsync();
             Console.ReadLine();
         }
+
+        public static string getConfig(string section, string key) 
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+            // configurationSection.Key => FilePath
+            // configurationSection.Value => C:\\temp\\logs\\output.txt
+            IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
+            return configurationSection.Value;
+
+        }
+
         
     }
 }
