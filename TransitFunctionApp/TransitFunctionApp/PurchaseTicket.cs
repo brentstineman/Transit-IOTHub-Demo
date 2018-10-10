@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using TransitFunctionApp.Models;
 using Microsoft.Azure.Devices;
 using Newtonsoft.Json;
+using Microsoft.Azure.EventHubs;
+using System.Text;
 
 namespace TransitFunctionApp
 {
@@ -20,27 +22,43 @@ namespace TransitFunctionApp
             EventHubTrigger("purchaseticketeventhub", 
             Connection = "receiverConnectionString")
             ]
-        PurchaseTicketRequest ticketRequestMessage, ILogger log)
+        EventData[] eventHubMessages, ILogger log)
         {
-            string methodName = ticketRequestMessage.MethodName;
-            //string iotHubName = Environment.GetEnvironmentVariable("IotHubName");
-            string deviceId = ticketRequestMessage.DeviceId;
-            //string responseUrl = $"https://{iotHubName}.azure-devices.net/twins/{deviceId}/methods?api-version=2018-06-30";
-            string transactionId = ticketRequestMessage.TransactionId;
-            var payload = new PurchaseTicketPayload()
+            // process messages
+            foreach (EventData message in eventHubMessages)
             {
-                TransactionId = transactionId,
-                IsApproved = true,
-                DeviceId = ticketRequestMessage.DeviceId,
-                DeviceType = ticketRequestMessage.DeviceType,
-                MessageType = ticketRequestMessage.MessageType,
-            };
+                string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
-            log.LogInformation($"Response Method: {methodName}");
+                // process each message
+                PurchaseTicketRequest ticketRequestMessage = JsonConvert.DeserializeObject<PurchaseTicketRequest>(messagePayload);
 
-            serviceClient = ServiceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));
-            InvokeMethod(methodName, payload).GetAwaiter().GetResult();
+                try
+                {
+                    string methodName = ticketRequestMessage.MethodName;
+                    //string iotHubName = Environment.GetEnvironmentVariable("IotHubName");
+                    string deviceId = ticketRequestMessage.DeviceId;
+                    //string responseUrl = $"https://{iotHubName}.azure-devices.net/twins/{deviceId}/methods?api-version=2018-06-30";
+                    string transactionId = ticketRequestMessage.TransactionId;
+                    var payload = new PurchaseTicketPayload()
+                    {
+                        TransactionId = transactionId,
+                        IsApproved = true,
+                        DeviceId = ticketRequestMessage.DeviceId,
+                        DeviceType = ticketRequestMessage.DeviceType,
+                        MessageType = ticketRequestMessage.MessageType,
+                    };
 
+                    log.LogInformation($"Response Method: {methodName}");
+
+                    serviceClient = ServiceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));
+                    InvokeMethod(methodName, payload).GetAwaiter().GetResult();
+                }
+                catch(Exception ex)
+                {
+                    log.LogError(ex.Message);
+                }
+                
+            }
         }
 
         // Invoke the direct method on the device, passing the payload
@@ -53,12 +71,21 @@ namespace TransitFunctionApp
             };
             var payload = JsonConvert.SerializeObject(purchaseTicketPayload);
             methodInvocation.SetPayloadJson(payload);
-            
-            // Invoke the direct method asynchronously and get the response from the simulated device.
-            var response = await serviceClient.InvokeDeviceMethodAsync(purchaseTicketPayload.DeviceId, methodInvocation);
 
-            Console.WriteLine("Response status: {0}, payload:", response.Status);
-            Console.WriteLine(response.GetPayloadAsJson());
+            try
+            {
+                // Invoke the direct method asynchronously and get the response from the simulated device.
+                var response = await serviceClient.InvokeDeviceMethodAsync(purchaseTicketPayload.DeviceId, methodInvocation);
+
+                Console.WriteLine("Response status: {0}, payload:", response.Status);
+                Console.WriteLine(response.GetPayloadAsJson());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            
         }
 
     }
