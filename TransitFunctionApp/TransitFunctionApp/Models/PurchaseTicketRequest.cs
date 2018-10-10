@@ -16,7 +16,12 @@ namespace TransitFunctionApp.Models
         public string DestinationLocation { get; set; }
         public DateTime DepartureTime { get; set; }
         public long Price { get; set; }
+        public string MethodName { get; set; }
 
+        public PurchaseTicketRequest()
+        {
+            this.MethodName = "ProcessPurchaseTicketResponse";
+        }
 
     }
 }
