@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
 using ClientMessage = Microsoft.Azure.Devices.Client.Message;
+using TransitFunctionApp.Models;
 
 namespace simulated_device
 {
@@ -35,6 +36,14 @@ namespace simulated_device
                 double currentTemperature = minTemperature + rand.NextDouble() * 15;
                 double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
+                PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
+                {
+                    DeviceId = new Guid().ToString(),
+                    DeviceType = "Kiosk",
+                    MessageType = "Purchase",
+                    TransactionId = "123",
+                    CreateTime = System.DateTime.UtcNow,
+                };
 
 
                 // Create JSON message
@@ -48,8 +57,7 @@ namespace simulated_device
                     humidity = currentHumidity,
                     
                 };
-                var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-                //var message = new Message(Encoding.ASCII.GetBytes(messageString));
+                var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);
 
                 var eventJsonBytes = Encoding.UTF8.GetBytes(messageString);
                 var message = new ClientMessage(eventJsonBytes)
@@ -61,7 +69,6 @@ namespace simulated_device
                 // Add a custom application property to the message.
                 // An IoT hub can filter on these properties without access to the message body.
                 var messageProperties = message.Properties;
-                //messageProperties.Add("messageType", "Telemetry");
                 messageProperties.Add("deviceId", "testing");
 
                 // Send the telemetry message

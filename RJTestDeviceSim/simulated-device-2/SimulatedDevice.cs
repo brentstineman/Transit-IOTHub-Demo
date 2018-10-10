@@ -9,6 +9,8 @@ using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
+using TransitFunctionApp.Models;
+using ClientMessage = Microsoft.Azure.Devices.Client.Message;
 
 namespace simulated_device
 {
@@ -19,7 +21,7 @@ namespace simulated_device
         // The device connection string to authenticate the device with your IoT hub.
         // Using the Azure CLI:
         // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyDotnetDevice --output table
-        private readonly static string s_connectionString = "{Your device connection string here}";
+        private readonly static string s_connectionString = "HostName=TransportationOneWeekHub.azure-devices.net;DeviceId=rjTest;SharedAccessKey=H9leaMcoVkvr8vAlHfKVHR4ww5yaUFhi2OvYWY5RT2E=";
 
         private static int s_telemetryInterval = 1; // Seconds
 
@@ -28,56 +30,71 @@ namespace simulated_device
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
 
-            // Check the payload is a single integer value
-            if (Int32.TryParse(data, out s_telemetryInterval))
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Telemetry interval set to {0} seconds", data);
-                Console.ResetColor();
+            Console.WriteLine("Executed direct method: " + methodRequest.Name);
 
-                // Acknowlege the direct method call with a 200 success message
-                string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
-            }
-            else
-            {
-                // Acknowlege the direct method call with a 400 error message
-                string result = "{\"result\":\"Invalid parameter\"}";
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 400));
-            }
+            // Acknowlege the direct method call with a 200 success message
+            string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
+            return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
+
+            //// Check the payload is a single integer value
+            //if (Int32.TryParse(data, out s_telemetryInterval))
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Green;
+            //    Console.WriteLine("Telemetry interval set to {0} seconds", data);
+            //    Console.ResetColor();
+
+            //    // Acknowlege the direct method call with a 200 success message
+            //    string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
+            //    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
+            //}
+            //else
+            //{
+            //    // Acknowlege the direct method call with a 400 error message
+            //    string result = "{\"result\":\"Invalid parameter\"}";
+            //    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 400));
+            //}
         }
 
         // Async method to send simulated telemetry
         private static async void SendDeviceToCloudMessagesAsync()
         {
             // Initial telemetry values
-            double minTemperature = 20;
-            double minHumidity = 60;
+            //double minTemperature = 20;
+            //double minHumidity = 60;
             Random rand = new Random();
 
             while (true)
             {
-                double currentTemperature = minTemperature + rand.NextDouble() * 15;
-                double currentHumidity = minHumidity + rand.NextDouble() * 20;
-
                 // Create JSON message
-                var telemetryDataPoint = new
+                PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
                 {
-                    temperature = currentTemperature,
-                    humidity = currentHumidity
+                    DeviceId = new Guid().ToString(),
+                    DeviceType = "Kiosk",
+                    MessageType = "Purchase",
+                    TransactionId = new Guid().ToString(),
+                    CreateTime = System.DateTime.UtcNow,
+                    Price = rand.Next(2,100)
                 };
-                var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-                var message = new Message(Encoding.ASCII.GetBytes(messageString));
+                
+                var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);
+
+                var eventJsonBytes = Encoding.UTF8.GetBytes(messageString);
+                var message = new ClientMessage(eventJsonBytes)
+                {
+                    ContentEncoding = "utf-8",
+                    ContentType = "application/json"
+                };
 
                 // Add a custom application property to the message.
                 // An IoT hub can filter on these properties without access to the message body.
-                message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
+                var messageProperties = message.Properties;
+                messageProperties.Add("deviceId", "testing");
 
-                // Send the tlemetry message
+                // Send the telemetry message
                 await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
 
-                await Task.Delay(s_telemetryInterval * 1000);
+                await Task.Delay(1000);
             }
         }
         private static void Main(string[] args)
