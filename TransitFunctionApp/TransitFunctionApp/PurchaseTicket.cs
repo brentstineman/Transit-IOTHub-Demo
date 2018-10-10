@@ -17,7 +17,7 @@ namespace TransitFunctionApp
             EventHubTrigger("purchaseticketeventhub", 
             Connection = "receiverConnectionString")
             ]
-        TicketRequestMessage ticketRequestMessage, ILogger log)
+        PurchaseTicketRequest ticketRequestMessage, ILogger log)
         {
             string transactionId = ticketRequestMessage.TransactionId;
             var response = new PurchaseTicketResponse()

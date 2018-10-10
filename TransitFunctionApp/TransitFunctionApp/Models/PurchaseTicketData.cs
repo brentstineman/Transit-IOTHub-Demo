@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TransitFunctionApp.Models
 {
-    public class PurchaseTicketData : IMessageData
+    public class PurchaseTicketData 
     {
         public string TransactionId { get; set; }
         public string OriginLocation { get; set; }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TransitFunctionApp.Models
 {
-    public class PurchaseTicketRequest : ITicketRequest
+    public class LowStockRequest : ITicketRequest
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
@@ -12,7 +12,7 @@ namespace TransitFunctionApp.Models
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
 
-        public PurchaseTicketData PurchaseTicketData { get; set; }
+        public LowStockData LowStockData { get; set; }
 
     }
 }
