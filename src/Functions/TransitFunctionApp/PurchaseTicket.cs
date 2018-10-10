@@ -35,9 +35,7 @@ namespace Transportation.Demo.Functions
                 try
                 {
                     string methodName = ticketRequestMessage.MethodName;
-                    //string iotHubName = Environment.GetEnvironmentVariable("IotHubName");
                     string deviceId = ticketRequestMessage.DeviceId;
-                    //string responseUrl = $"https://{iotHubName}.azure-devices.net/twins/{deviceId}/methods?api-version=2018-06-30";
                     string transactionId = ticketRequestMessage.TransactionId;
                     var payload = new PurchaseTicketPayload()
                     {
