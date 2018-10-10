@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TransitFunctionApp.Models
+namespace Transportation.Demo.Shared.Models
 {
     public class PurchaseTicketPayload
     {

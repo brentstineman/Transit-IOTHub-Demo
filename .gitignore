@@ -331,3 +331,9 @@ ASALocalRun/
 
 # AppSettings Files with Credentials
 AppSettings.json
+
+# Ignore test files
+src/RJTestDeviceSim/
+
+# Ignore Azure functions local settings file
+local.settings.json

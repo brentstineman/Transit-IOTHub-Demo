@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TransitFunctionApp.Models
+namespace Transportation.Demo.Shared.Models
 {
     public interface ITicketRequest
     {

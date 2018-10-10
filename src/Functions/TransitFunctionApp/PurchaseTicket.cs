@@ -2,15 +2,15 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using System;
+using Transportation.Demo.Shared.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
-using TransitFunctionApp.Models;
 using Microsoft.Azure.Devices;
 using Newtonsoft.Json;
 using Microsoft.Azure.EventHubs;
 using System.Text;
 
-namespace TransitFunctionApp
+namespace Transportation.Demo.Functions
 {
     public static class PurchaseTicket
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TransitFunctionApp.Models
+namespace Transportation.Demo.Shared.Models
 {
-    public class LowStockRequest : ITicketRequest
+    class IssueTicketRequest : ITicketRequest
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
@@ -12,12 +12,14 @@ namespace TransitFunctionApp.Models
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
         public string MethodName { get; set; }
-        public bool IsLowStock { get; set; }
 
-        public LowStockRequest()
+        public string OriginLocation { get; set; }
+        public string DestinationLocation { get; set; }
+        public DateTime DepartureTime { get; set; }
+        public long Price { get; set; }
+        public IssueTicketRequest()
         {
-            this.MethodName = "ProcessLowStockResponse";
+            this.MethodName = "ProcessIssueTicketResponse";
         }
-
     }
 }
