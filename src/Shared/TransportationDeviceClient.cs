@@ -18,7 +18,7 @@ namespace Transportation.IoTCore
         public async Task SendMessageAsync(string msg)
         {
             var message = new Message(msg.GetBytes());
-            deviceClient.SendEventAsync(message);
+            await deviceClient.SendEventAsync(message);
         }
 
         public async Task SendMessageBatchAsync(IEnumerable<string> msgs)
@@ -28,7 +28,7 @@ namespace Transportation.IoTCore
             {
                 messages.Add(new Message(item.GetBytes()));
             }
-            deviceClient.SendEventBatchAsync(messages);
+            await deviceClient.SendEventBatchAsync(messages);
         }
         
         public async Task<Message> ReceiveMessageAsync()
