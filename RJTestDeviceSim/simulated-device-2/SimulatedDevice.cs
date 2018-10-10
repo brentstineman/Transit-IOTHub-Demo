@@ -73,7 +73,8 @@ namespace simulated_device
                     MessageType = "Purchase",
                     TransactionId = new Guid().ToString(),
                     CreateTime = System.DateTime.UtcNow,
-                    Price = rand.Next(2,100)
+                    Price = rand.Next(2,100), 
+                    MethodName = "SetTelemetryInterval"
                 };
                 
                 var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);

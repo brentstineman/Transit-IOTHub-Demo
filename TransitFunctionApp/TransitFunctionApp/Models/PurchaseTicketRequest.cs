@@ -20,7 +20,7 @@ namespace TransitFunctionApp.Models
 
         public PurchaseTicketRequest()
         {
-            this.MethodName = "ProcessPurchaseTicketResponse";
+            this.MethodName = "SetTelemetryInterval";
         }
 
     }
