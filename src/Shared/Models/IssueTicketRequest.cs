@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Transportation.Demo.Shared.Models
 {
-    class IssueTicketRequest : ITicketRequest
+    public class IssueTicketRequest : ITicketRequest
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
