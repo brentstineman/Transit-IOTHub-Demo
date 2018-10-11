@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Transportation.IoTCore
+namespace Transportation.Demo.Shared
 {
     [Obsolete("Use implementation located in Transportation.Demo.Devices.Base")]
     public class TransportationDeviceClient

@@ -7,8 +7,8 @@
 using Newtonsoft.Json;
 using System;
 using Microsoft.Extensions.Configuration;
-using Transportation.Demo.Devices.Base;
 using System.IO;
+using Transportation.Demo.Devices.Base;
 
 namespace Transportation.Demo.Devices.Kiosk
 {

@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Client;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Transportation.Demo.Shared;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -28,11 +29,7 @@ namespace Transportation.Demo.Devices.Base
 
         public async Task SendMessageBatchAsync(IEnumerable<string> msgs)
         {
-            var messages = new List<Message>();
-            foreach (var item in msgs)
-            {
-                messages.Add(new Message(Encoding.UTF8.GetBytes(item)));
-            }
+            var messages = msgs.ForEach((x) => { return new Message(x.GetBytes()); });
             deviceClient.SendEventBatchAsync(messages);
         }
         

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transportation.Demo.Shared"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transportation.Demo.Devices.Kiosk", "Kiosk\Transportation.Demo.Devices.Kiosk.csproj", "{04FC0CDA-7FEF-45C1-AAB3-947F9F561BFC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Base", "Base\Base.csproj", "{5590B2EF-D35C-47F5-B37C-610B5B07F6A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transportation.Demo.Devices.Base", "Base\Transportation.Demo.Devices.Base.csproj", "{5590B2EF-D35C-47F5-B37C-610B5B07F6A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
