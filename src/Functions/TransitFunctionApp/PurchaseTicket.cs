@@ -16,6 +16,7 @@ namespace Transportation.Demo.Functions
     {
 
         private static ServiceClient serviceClient;
+
         [FunctionName("PurchaseTicket")]
         public static void Run(
             [
