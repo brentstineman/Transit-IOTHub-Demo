@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Transportation.IoTCore
 {
+    [Obsolete("Use implementation located in Transportation.Demo.Devices.Base")]
     public class TransportationDeviceClient
     {
         private DeviceClient deviceClient;
