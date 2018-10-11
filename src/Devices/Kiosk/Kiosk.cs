@@ -4,51 +4,17 @@
 // This application uses the Azure IoT Hub device SDK for .NET
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/iothub/device/samples
 
-using System;
-using System.IO;
-using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Configuration.Json;
+using System;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.FileExtensions;
+using System.IO;
+using Transportation.Demo.Devices.Base;
 
-namespace Transportation.Demo.Devices.Base
+namespace Transportation.Demo.Devices.Kiosk
 {
-    public class TransportationDeviceClient
+    public class TransportationDeviceKioskClient
     {
-        private static DeviceClient deviceClient;
-        
-        private readonly static string connectionString = getConfig("AppSettings","IoTConnectionString");
-
-        private static int telemetryInterval = 1; // Seconds
-
-        public async Task SendMessageAsync(string msg)
-        {
-            var message = new Message(Encoding.UTF8.GetBytes(msg));
-            deviceClient.SendEventAsync(message);
-        }
-
-        public async Task SendMessageBatchAsync(IEnumerable<string> msgs)
-        {
-            var messages = new List<Message>();
-            foreach (var item in msgs)
-            {
-                messages.Add(new Message(Encoding.UTF8.GetBytes(item)));
-            }
-            deviceClient.SendEventBatchAsync(messages);
-        }
-        
-        public async Task<Message> ReceiveMessageAsync()
-        {
-            var message = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(60 * 1));
-            return message;
-        }
-        
-        // Async method to send simulated telemetry
+       // Async method to send simulated telemetry
         private static async void SendDeviceToCloudMessagesAsync()
         {
             // Initial telemetry values
@@ -68,32 +34,26 @@ namespace Transportation.Demo.Devices.Base
                     humidity = currentHumidity
                 };
                 var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-                var message = new Message(Encoding.ASCII.GetBytes(messageString));
-
-                // Add a custom application property to the message.
-                // An IoT hub can filter on these properties without access to the message body.
-                message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
-
+               
                 // Send the tlemetry message
-                await deviceClient.SendEventAsync(message);
+                await kiosk.SendMessageAsync(messageString);
                 Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
 
-                await Task.Delay(telemetryInterval * 1000);
             }
         }
         private static void Main(string[] args)
         {
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
-
             // Connect to the IoT hub using the MQTT protocol
-            deviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
-
-            // Create a handler for the direct method call
-            //deviceClient.SetMethodHandlerAsync("SetTelemetryInterval", SetTelemetryInterval, null).Wait();
+            // Connect to the IoT hub using the MQTT protocol
+            connectionString = getConfig("AppSettings", "IoTConnectionString");
+            kiosk = new TransportationDeviceClient(connectionString);
             SendDeviceToCloudMessagesAsync();
             Console.ReadLine();
         }
+        public static TransportationDeviceClient kiosk;
 
+        public static string connectionString;
         public static string getConfig(string section, string key) 
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
@@ -107,7 +67,5 @@ namespace Transportation.Demo.Devices.Base
             return configurationSection.Value;
 
         }
-
-        
     }
 }
