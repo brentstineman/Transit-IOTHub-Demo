@@ -9,12 +9,14 @@ using System;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using Transportation.Demo.Devices.Base;
+using Microsoft.Azure.Devices.Client;
+using System.Threading.Tasks;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
     public class TransportationDeviceKioskClient
     {
-       // Async method to send simulated telemetry
+        // Async method to send simulated telemetry
         private static async void SendDeviceToCloudMessagesAsync()
         {
             // Initial telemetry values
@@ -34,9 +36,9 @@ namespace Transportation.Demo.Devices.Kiosk
                     humidity = currentHumidity
                 };
                 var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-               
+
                 // Send the tlemetry message
-                await kiosk.SendMessageAsync(messageString);
+                await deviceClient.SendMessageAsync(messageString);
                 Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
 
             }
@@ -44,17 +46,18 @@ namespace Transportation.Demo.Devices.Kiosk
         private static void Main(string[] args)
         {
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
-            // Connect to the IoT hub using the MQTT protocol
+            
             // Connect to the IoT hub using the MQTT protocol
             connectionString = getConfig("AppSettings", "IoTConnectionString");
-            kiosk = new TransportationDeviceClient(connectionString);
+            deviceClient = new TransportationDeviceClient(connectionString);
+            RegisterDirectMethods();
             SendDeviceToCloudMessagesAsync();
             Console.ReadLine();
         }
-        public static TransportationDeviceClient kiosk;
+        public static TransportationDeviceClient deviceClient;
 
         public static string connectionString;
-        public static string getConfig(string section, string key) 
+        public static string getConfig(string section, string key)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -66,6 +69,31 @@ namespace Transportation.Demo.Devices.Kiosk
             IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
             return configurationSection.Value;
 
+        }
+
+        private static async void RegisterDirectMethods()
+        {
+            await deviceClient.RegisterDirectMethodAsync(DirectMethodExample);
+        }
+
+        /// <summary>
+        /// Provides an Example of a Direct Method
+        /// Feel free to use this as a template and then delete this once we have this implemented
+        /// 
+        /// The name of the method should exactly match what the direct method string is being called from the IoT Hub.
+        /// </summary>
+        /// <param name="methodRequest"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        private static Task<MethodResponse> DirectMethodExample(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"\t *** {nameof(DirectMethodExample)} was called.");
+
+            Console.WriteLine();
+            Console.WriteLine("\t{0}", methodRequest.DataAsJson);
+            Console.WriteLine();
+
+            return Task.FromResult(new MethodResponse(new byte[0], 200));
         }
     }
 }
