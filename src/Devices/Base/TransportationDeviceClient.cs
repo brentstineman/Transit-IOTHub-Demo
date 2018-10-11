@@ -24,7 +24,7 @@ namespace Transportation.Demo.Devices.Base
         public async Task SendMessageAsync(string msg)
         {
             var message = new Message(Encoding.UTF8.GetBytes(msg));
-            deviceClient.SendEventAsync(message);
+            await deviceClient.SendEventAsync(message);
         }
 
         public async Task SendMessageBatchAsync(IEnumerable<string> msgs)
@@ -38,14 +38,10 @@ namespace Transportation.Demo.Devices.Base
             var message = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(60 * 1));
             return message;
         }
-        public void RegisterDirectMethod(string methodName, MethodCallback methodHandler)
-        {
-            deviceClient.SetMethodHandler(methodName, methodHandler, null);
-        }
 
-        public async Task RegisterDirectMethodAsync(string methodName, MethodCallback methodHandler)
+        public async Task RegisterDirectMethodAsync(MethodCallback methodHandler)
         {
-            await deviceClient.SetMethodHandlerAsync(methodName, methodHandler, null);
+            await deviceClient.SetMethodHandlerAsync(nameof(methodHandler), methodHandler, null);
         }
     }
 }
