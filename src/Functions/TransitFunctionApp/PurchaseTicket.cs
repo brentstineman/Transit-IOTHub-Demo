@@ -16,7 +16,7 @@ namespace Transportation.Demo.Functions
     {
 
         private static ServiceClient serviceClient;
-        //[FunctionName("PurchaseTicket")]
+        [FunctionName("PurchaseTicket")]
         public static void Run(
             [
             EventHubTrigger("purchaseticketeventhub", 
