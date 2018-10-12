@@ -38,7 +38,6 @@ namespace Transportation.Demo.Devices.Base
             var message = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(60 * 1));
             return message;
         }
-
         public async Task RegisterDirectMethodAsync(MethodCallback methodHandler)
         {
             await deviceClient.SetMethodHandlerAsync(nameof(methodHandler), methodHandler, null);

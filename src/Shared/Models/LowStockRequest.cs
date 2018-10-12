@@ -12,12 +12,7 @@ namespace Transportation.Demo.Shared.Models
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
         public string MethodName { get; set; }
-        public bool IsLowStock { get; set; }
-
-        public LowStockRequest()
-        {
-            this.MethodName = "ProcessLowStockResponse";
-        }
+        public int StockLevel { get; set; }
 
     }
 }
