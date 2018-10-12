@@ -1,0 +1,6 @@
+{
+    "AppSettings": 
+    {
+      "IoTConnectionString": "PutHereYourConnectionString"
+    }
+}
