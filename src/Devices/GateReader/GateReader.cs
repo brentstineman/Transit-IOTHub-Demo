@@ -56,7 +56,7 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
             
             // Connect to the IoT hub using the MQTT protocol
-            connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
+            connectionString = getConfig("AppSettings", "IoTConnectionString");
             deviceClient = new TransportationDeviceClient(connectionString);
             RegisterDirectMethods();
             while (true)
@@ -103,6 +103,19 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine();
         }
 
+        public static string getConfig(string section, string key)
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+            // configurationSection.Key => FilePath
+            // configurationSection.Value => C:\\temp\\logs\\output.txt
+            IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
+            return configurationSection.Value;
+
+        }
 
         private static async void RegisterDirectMethods()
         {
