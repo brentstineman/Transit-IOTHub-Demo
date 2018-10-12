@@ -23,7 +23,11 @@ namespace Transportation.Demo.Devices.Base
         
         public async Task SendMessageAsync(string msg)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(msg));
+            var message = new Message(Encoding.UTF8.GetBytes(msg))
+            {
+                ContentEncoding = "utf-8",
+                ContentType = "application/json"
+            };
             await deviceClient.SendEventAsync(message);
         }
 

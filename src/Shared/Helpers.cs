@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Devices.Client;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Transportation.Demo.Shared
 {
@@ -8,9 +9,7 @@ namespace Transportation.Demo.Shared
     {
         public static byte[] GetBytes(this string str)
         {
-            var bytes = new byte[str.Length * sizeof(char)];
-            Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
-            return bytes;
+            return Encoding.UTF8.GetBytes(str);
         }
 
         public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
