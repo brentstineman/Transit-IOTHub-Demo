@@ -28,8 +28,9 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
             
             // Connect to the IoT hub using the MQTT protocol
-            _connectionString = getConfig("AppSettings", "IoTConnectionString");
-            _deviceClient = new TransportationDeviceClient(_connectionString);
+            _connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
+            _deviceClient = new TransportationDeviceClient(connectionString);
+
             RegisterDirectMethods();
             while (true)
             {
@@ -88,7 +89,6 @@ namespace Transportation.Demo.Devices.Kiosk
             IConfigurationRoot configuration = builder.Build();
             IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
             return configurationSection.Value;
-
         }
 
         private static async void RegisterDirectMethods()
