@@ -66,7 +66,6 @@ namespace Transportation.Demo.Devices.Kiosk
                 Thread.Sleep(30000);
 
             }
-            Console.ReadLine();
         }
 
         private static async void SendPurchaseTicketMessageToCloudAsync()
@@ -98,7 +97,12 @@ namespace Transportation.Demo.Devices.Kiosk
             messageProperties.Add("deviceId", "rjTest");
 
             // Send the telemetry message
-            await deviceClient.SendMessageAsync(messageString);
+            //await deviceClient.SendMessageAsync(messageString);
+
+            DeviceClient client = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
+            client.SetMethodHandlerAsync("ReceivePurchaseTicketResponse", ReceivePurchaseTicketResponse, null).Wait();
+            await client.SendEventAsync(message);
+
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
         }
@@ -143,11 +147,10 @@ namespace Transportation.Demo.Devices.Kiosk
         }
 
         // Handle the direct method call
-        private static Task<MethodResponse> ReceivePurchaseTicketResponse (MethodRequest methodRequest, object userContext)
+        private static Task<MethodResponse> ReceivePurchaseTicketResponse(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
             var json = methodRequest.DataAsJson;
-
 
             Console.WriteLine("Executed direct method: " + methodRequest.Name);
 
