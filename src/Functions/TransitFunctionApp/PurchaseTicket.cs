@@ -49,7 +49,9 @@ namespace Transportation.Demo.Functions
 
                     log.LogInformation($"Response Method: {methodName}");
 
-                    serviceClient = ServiceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));
+                    var connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString");
+
+                    serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
                     InvokeMethod(methodName, payload).GetAwaiter().GetResult();
                 }
                 catch(Exception ex)

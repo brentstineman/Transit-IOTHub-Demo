@@ -14,50 +14,23 @@ using System.Threading.Tasks;
 using System.Text;
 using Transportation.Demo.Shared.Models;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
     public class TransportationDeviceKioskClient
     {
-        public static TransportationDeviceClient deviceClient;
-        public static string connectionString;
-        //private static Microsoft.Azure.Devices.Client.DeviceClient _deviceClient;
+        public static TransportationDeviceClient _deviceClient;
+        public static string _connectionString;
 
-        // Async method to send simulated telemetry
-        private static async void SendDeviceToCloudMessagesAsync()
-        {
-
-            // Initial telemetry values
-            double minTemperature = 20;
-            double minHumidity = 60;
-            Random random = new Random();
-
-            while (true)
-            {
-                double currentTemperature = minTemperature + random.NextDouble() * 15;
-                double currentHumidity = minHumidity + random.NextDouble() * 20;
-
-                // Create JSON message
-                var telemetryDataPoint = new
-                {
-                    temperature = currentTemperature,
-                    humidity = currentHumidity
-                };
-                var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-
-                // Send the message
-                await deviceClient.SendMessageAsync(messageString);
-                Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
-
-            }
-        }
         private static void Main(string[] args)
         {
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
             
             // Connect to the IoT hub using the MQTT protocol
-            connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
-            deviceClient = new TransportationDeviceClient(connectionString);
+            _connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
+            _deviceClient = new TransportationDeviceClient(connectionString);
+
             RegisterDirectMethods();
             while (true)
             {
@@ -66,7 +39,6 @@ namespace Transportation.Demo.Devices.Kiosk
                 Thread.Sleep(30000);
 
             }
-            Console.ReadLine();
         }
 
         private static async void SendPurchaseTicketMessageToCloudAsync()
@@ -98,45 +70,44 @@ namespace Transportation.Demo.Devices.Kiosk
             messageProperties.Add("deviceId", "rjTest");
 
             // Send the telemetry message
-            await deviceClient.SendMessageAsync(messageString);
+            //await _deviceClient.SendMessageAsync(messageString);
+
+            //DeviceClient client = DeviceClient.CreateFromConnectionString(_connectionString, TransportType.Mqtt);
+            //client.SetMethodHandlerAsync("ReceivePurchaseTicketResponse", ReceivePurchaseTicketResponse, null).Wait();
+            await _deviceClient.SendMessageAsync(messageString);
+            //await client.SendEventAsync(message);
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
         }
 
+        public static string getConfig(string section, string key)
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+            IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
+            return configurationSection.Value;
+        }
 
         private static async void RegisterDirectMethods()
         {
-            await deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse);
+            await _deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse);
         }
 
-        /// <summary>
-        /// Provides an Example of a Direct Method
-        /// Feel free to use this as a template and then delete this once we have this implemented
-        /// 
-        /// The name of the method should exactly match what the direct method string is being called from the IoT Hub.
-        /// </summary>
-        /// <param name="methodRequest"></param>
-        /// <param name="userContext"></param>
-        /// <returns></returns>
-        private static Task<MethodResponse> DirectMethodExample(MethodRequest methodRequest, object userContext)
-        {
-            Console.WriteLine($"\t *** {nameof(DirectMethodExample)} was called.");
-
-            Console.WriteLine();
-            Console.WriteLine("\t{0}", methodRequest.DataAsJson);
-            Console.WriteLine();
-
-            return Task.FromResult(new MethodResponse(new byte[0], 200));
-        }
-
-        // Handle the direct method call
-        private static Task<MethodResponse> ReceivePurchaseTicketResponse (MethodRequest methodRequest, object userContext)
+        // Handle the direct method call back from Azure
+        private static Task<MethodResponse> ReceivePurchaseTicketResponse(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
-            var json = methodRequest.DataAsJson;
-
+            var json = JObject.Parse(data); //methodRequest.DataAsJson;
+            string transactionId = json["TransactionId"].ToString();
+            bool isApproved = (bool)json["IsApproved"];
 
             Console.WriteLine("Executed direct method: " + methodRequest.Name);
+            Console.WriteLine($"Transaction Id: {transactionId}");
+            Console.WriteLine($"IsApproved: {isApproved}");
+            Console.WriteLine();
 
             // Acknowlege the direct method call with a 200 success message
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
