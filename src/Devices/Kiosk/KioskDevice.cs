@@ -1,47 +1,28 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-// This application uses the Azure IoT Hub device SDK for .NET
-// For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/iothub/device/samples
-
+﻿using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
-using System;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using Transportation.Demo.Devices.Base;
-using Microsoft.Azure.Devices.Client;
-using System.Threading.Tasks;
-using System.Text;
-using Transportation.Demo.Shared.Models;
-using System.Threading;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
-    public class TransportationDeviceKioskClient
+    class KioskDevice : BaseDevice
     {
-        public static TransportationDeviceClient _deviceClient;
-        public static string _connectionString;
 
-        private static void Main(string[] args)
+        public KioskDevice(string connectionString) : base(connectionString)
         {
-            Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
-            
-            // Connect to the IoT hub using the MQTT protocol
-            _connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
-            _deviceClient = new TransportationDeviceClient(connectionString);
+            // set up any simulated events for this device
+            this.EventList.Add(new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync));
 
-            RegisterDirectMethods();
-            while (true)
-            {
-                SendPurchaseTicketMessageToCloudAsync();
-
-                Thread.Sleep(30000);
-
-            }
+            // register any callbacks
+            this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
         }
 
-        private static async void SendPurchaseTicketMessageToCloudAsync()
+        private async void SendPurchaseTicketMessageToCloudAsync()
         {
             var random = new Random();
             PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
@@ -74,30 +55,14 @@ namespace Transportation.Demo.Devices.Kiosk
 
             //DeviceClient client = DeviceClient.CreateFromConnectionString(_connectionString, TransportType.Mqtt);
             //client.SetMethodHandlerAsync("ReceivePurchaseTicketResponse", ReceivePurchaseTicketResponse, null).Wait();
-            await _deviceClient.SendMessageAsync(messageString);
+            await this.deviceClient.SendMessageAsync(messageString);
             //await client.SendEventAsync(message);
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
         }
 
-        public static string getConfig(string section, string key)
-        {
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            IConfigurationRoot configuration = builder.Build();
-            IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
-            return configurationSection.Value;
-        }
-
-        private static async void RegisterDirectMethods()
-        {
-            await _deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse);
-        }
-
         // Handle the direct method call back from Azure
-        private static Task<MethodResponse> ReceivePurchaseTicketResponse(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> ReceivePurchaseTicketResponse(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
             var json = JObject.Parse(data); //methodRequest.DataAsJson;
@@ -114,5 +79,6 @@ namespace Transportation.Demo.Devices.Kiosk
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
 
         }
+
     }
 }

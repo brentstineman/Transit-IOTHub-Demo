@@ -4,28 +4,30 @@ using Transportation.Demo.Devices.Base;
 
 namespace Transportation.Demo.Devices.GateReader
 {
-    class TransportationDeviceGateReaderClient
+    class GateReaderhost
     {
-        public static TransportationDeviceClient deviceClient;
-        public static string connectionString;
+        public static GateReaderDevice myGateReader;
 
         static void Main(string[] args)
         {
             Console.WriteLine("Transportation Demo- Simulated Gate/Reader. Ctrl-C to exit.\n");
 
-            // Connect to the IoT hub using the MQTT protocol
-            connectionString = ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString");
-            deviceClient = new TransportationDeviceClient(connectionString);
+            // create our simulated device
+            myGateReader = new GateReaderDevice(ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            // start the device running
+            myGateReader.StartAllEvents(); 
 
+            // put the host into a loop
             while (true)
             {
                 //do stuff
-
                 Thread.Sleep(30000);
-
             }
+
+            myGateReader.StopAllEvents();
 
             Console.ReadLine();
         }
+
     }
 }
