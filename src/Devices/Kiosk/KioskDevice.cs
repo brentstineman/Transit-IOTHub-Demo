@@ -10,7 +10,7 @@ using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
-    class KioskDevice : BaseDevice
+    public class KioskDevice : BaseDevice
     {
 
         public KioskDevice(string connectionString) : base(connectionString)

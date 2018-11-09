@@ -31,23 +31,12 @@ namespace Transportation.Demo.Devices.Kiosk
             // start the device running
             myKiosk.StartAllEvents();
 
-            RegisterDirectMethods();
             while (true)
             {
                 Thread.Sleep(30000);
             }
         }
 
-        public static string getConfig(string section, string key)
-        {
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            IConfigurationRoot configuration = builder.Build();
-            IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
-            return configurationSection.Value;
-        }
-
+ 
     }
 }
