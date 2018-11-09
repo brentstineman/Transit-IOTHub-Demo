@@ -12,4 +12,4 @@ This folder contains a solution file for Visual Studio that includes the followi
 **Transportation.Demo.Devices.Kiosk**: The implementation of a simulated kiosk for purchasing tickets. Includes the device implementation as a class, and a console application to act as a host for the simulated device. 
 
 ## Simulated Device Implementation
-The implementation of a specific simulated device is done by inheriting from the [Transportation.Demo.Devices.Base.BaseDevice class](../blob/BaseDevice/src/Devices/Base/BaseDevice.cs). 
+The implementation of a specific simulated device is done by inheriting from the [Transportation.Demo.Devices.Base.BaseDevice class](../Devices/Base/BaseDevice.cs). 
