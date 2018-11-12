@@ -35,7 +35,7 @@ namespace Transportation.Demo.Devices.Kiosk
                 TransactionId = Guid.NewGuid().ToString(),
                 CreateTime = System.DateTime.UtcNow,
                 Price = random.Next(2, 100),
-                MethodName = "ReceivePurchaseTicketResponse"
+                MethodName = "ReceivePurchaseTicketResponse" // must match callback method
             };
 
             var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);
