@@ -1,9 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-// This application uses the Azure IoT Hub device SDK for .NET
-// For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/iothub/device/samples
-
+﻿
 using Newtonsoft.Json;
 using System;
 using Microsoft.Extensions.Configuration;

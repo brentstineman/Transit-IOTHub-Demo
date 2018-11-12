@@ -30,7 +30,7 @@ namespace Transportation.Demo.Devices.Base
 
             this.timerfunction = timerfunction;
 
-            eventTimer = new Timer(this.CalculateNextInterval());
+            eventTimer = new Timer();
             eventTimer.AutoReset = false; // don't automatically rerun the timer
             eventTimer.Elapsed += OnTimedEvent;
 

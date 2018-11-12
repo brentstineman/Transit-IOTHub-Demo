@@ -4,7 +4,7 @@ using Transportation.Demo.Devices.Base;
 
 namespace Transportation.Demo.Devices.GateReader
 {
-    class GateReaderhost
+    class GateReaderHost
     {
         public static GateReaderDevice myGateReader;
 
