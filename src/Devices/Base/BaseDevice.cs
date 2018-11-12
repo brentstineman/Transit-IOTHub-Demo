@@ -11,12 +11,18 @@ namespace Transportation.Demo.Devices.Base
         protected TransportationDeviceClient deviceClient;
         private string connectionString;
 
-        public BaseDevice(string connectionString)
+        protected string deviceId;
+        protected string deviceType;
+
+        public BaseDevice(string deviceId, string connectionString)
         {
+            this.deviceId = deviceId;
             this.connectionString = connectionString; // save this for later
 
             // Connect to the IoT hub using the MQTT protocol
             deviceClient = new TransportationDeviceClient(connectionString);
+
+            // ?? validate device ID on instantiation ?? 
         }
 
         public void StartAllEvents()

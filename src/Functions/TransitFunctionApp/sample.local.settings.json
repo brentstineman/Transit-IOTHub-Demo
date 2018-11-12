@@ -5,6 +5,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "receiverConnectionString": "",
     "IotHubConnectionString": "",
-    "IotHubName": ""
+    "PurchaseTicketEventhubName": "purchaseticket",
+    "LowStockEventHub": "lowstock",
+    "IssueTicketEventHub": "ticketissued"
   }
 }

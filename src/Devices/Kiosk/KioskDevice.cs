@@ -13,8 +13,10 @@ namespace Transportation.Demo.Devices.Kiosk
     public class KioskDevice : BaseDevice
     {
 
-        public KioskDevice(string connectionString) : base(connectionString)
+        public KioskDevice(string deviceId, string connectionString) : base(deviceId, connectionString)
         {
+            base.deviceType = "Kiosk";
+
             // set up any simulated events for this device
             this.EventList.Add(new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync));
 
@@ -27,8 +29,8 @@ namespace Transportation.Demo.Devices.Kiosk
             var random = new Random();
             PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
             {
-                DeviceId = "rjTest",
-                DeviceType = "Kiosk",
+                DeviceId = this.deviceId,
+                DeviceType = this.deviceType,
                 MessageType = "Purchase",
                 TransactionId = Guid.NewGuid().ToString(),
                 CreateTime = System.DateTime.UtcNow,
@@ -48,7 +50,7 @@ namespace Transportation.Demo.Devices.Kiosk
             // Add a custom application property to the message.
             // An IoT hub can filter on these properties without access to the message body.
             var messageProperties = message.Properties;
-            messageProperties.Add("deviceId", "rjTest");
+            messageProperties.Add("deviceId", this.deviceId);
 
             // Send the telemetry message
             //await _deviceClient.SendMessageAsync(messageString);

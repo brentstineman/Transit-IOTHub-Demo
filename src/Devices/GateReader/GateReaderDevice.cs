@@ -7,7 +7,7 @@ namespace Transportation.Demo.Devices.GateReader
 {
     class GateReaderDevice : BaseDevice
     {
-        public GateReaderDevice(string connectionString) : base(connectionString)
+        public GateReaderDevice(string deviceId, string connectionString) : base( deviceId, connectionString)
         {
             // set up any simulated events for this device
             this.EventList.Add(new SimulatedEvent(5000, 2500, this.DoSomething));

@@ -13,7 +13,7 @@ namespace Transportation.Demo.Functions
         [FunctionName("LowStockFunction")]
         public static void Run(
             [
-            EventHubTrigger("lowstockeventhub", 
+            EventHubTrigger("%LowStockEventHub%", 
             Connection = "receiverConnectionString")
             ]
         EventData[] eventHubMessages, ILogger log)

@@ -18,7 +18,7 @@ namespace Transportation.Demo.Functions
         [FunctionName("IssueTicket")]
         public static void Run(
             [
-            EventHubTrigger("issueticketeventhub",
+            EventHubTrigger("%IssueTicketEventHub%",
             Connection = "receiverConnectionString")
             ]
             EventData[] eventHubMessages, ILogger log)

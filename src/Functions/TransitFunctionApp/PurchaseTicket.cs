@@ -17,7 +17,7 @@ namespace TransitFunctionApp
         [FunctionName("PurchaseTicket")]
         public static void Run(
             [
-            EventHubTrigger("purchaseticketeventhub",
+            EventHubTrigger("%PurchaseTicketEventhubName%",
             Connection = "receiverConnectionString")
             ]
             EventData[] eventHubMessages, ILogger log)
