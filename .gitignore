@@ -337,3 +337,6 @@ src/RJTestDeviceSim/
 
 # Ignore Azure functions local settings file
 local.settings.json
+
+# ignore VS Code build tasks
+tasks.json

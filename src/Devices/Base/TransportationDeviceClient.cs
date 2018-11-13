@@ -45,7 +45,7 @@ namespace Transportation.Demo.Devices.Base
 
         public async Task RegisterDirectMethodAsync(MethodCallback methodHandler)
         {
-            await deviceClient.SetMethodHandlerAsync(nameof(methodHandler), methodHandler, null);
+            await deviceClient.SetMethodHandlerAsync(methodHandler.Method.Name, methodHandler, null);
         }
     }
 }
