@@ -12,19 +12,21 @@ namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
+        SimulatedEvent purchaseEvent; 
 
         public KioskDevice(string deviceId, string connectionString) : base(deviceId, connectionString)
         {
             base.deviceType = "Kiosk";
 
             // set up any simulated events for this device
-            this.EventList.Add(new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync));
+            purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync);
+            this.EventList.Add(purchaseEvent);
 
             // register any callbacks
             this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
         }
 
-        private async void SendPurchaseTicketMessageToCloudAsync()
+        private bool SendPurchaseTicketMessageToCloudAsync()
         {
             var random = new Random();
             PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
@@ -53,14 +55,12 @@ namespace Transportation.Demo.Devices.Kiosk
             messageProperties.Add("deviceId", this.deviceId);
 
             // Send the telemetry message
-            //await _deviceClient.SendMessageAsync(messageString);
+            this.deviceClient.SendMessageAsync(messageString).Wait();
 
-            //DeviceClient client = DeviceClient.CreateFromConnectionString(_connectionString, TransportType.Mqtt);
-            //client.SetMethodHandlerAsync("ReceivePurchaseTicketResponse", ReceivePurchaseTicketResponse, null).Wait();
-            await this.deviceClient.SendMessageAsync(messageString);
-            //await client.SendEventAsync(message);
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
+
+            return false; // don't restart timer
         }
 
         // Handle the direct method call back from Azure
@@ -78,9 +78,11 @@ namespace Transportation.Demo.Devices.Kiosk
 
             // Acknowlege the direct method call with a 200 success message
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
+
+            // restart timer
+            purchaseEvent.Start();
+
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
-
         }
-
     }
 }

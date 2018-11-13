@@ -13,9 +13,11 @@ namespace Transportation.Demo.Devices.GateReader
             this.EventList.Add(new SimulatedEvent(5000, 2500, this.DoSomething));
         }
 
-        private void DoSomething()
+        private bool DoSomething()
         {
             Console.WriteLine("Doing Something..");
+
+            return true;
         }
     }
 }

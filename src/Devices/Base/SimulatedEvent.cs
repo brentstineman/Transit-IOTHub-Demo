@@ -8,7 +8,8 @@ namespace Transportation.Demo.Devices.Base
         private Timer eventTimer;
         private double interval;
         private double jitter; 
-        public delegate void eventDelegate();
+        // return true is ready to continue, otherwise return false
+        public delegate bool eventDelegate();
         private long eventCount = 0;
 
         private eventDelegate timerfunction;
@@ -42,10 +43,10 @@ namespace Transportation.Demo.Devices.Base
             Console.WriteLine("The Elapsed event #{0} was raised at {1:HH:mm:ss.fff}", this.eventCount, e.SignalTime);
 
             // execute our event
-            this.timerfunction(); 
-
-            // restart the timer for our next run           
-            this.Start(); // run again
+            if (this.timerfunction()) // if the function returned "true", restart the timer. 
+            {                          
+                this.Start(); // restart the timer for our next run 
+            }
         }
 
         // Starts the event's internal timer
