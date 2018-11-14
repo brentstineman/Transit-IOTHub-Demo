@@ -12,21 +12,26 @@ namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
-        SimulatedEvent purchaseEvent; 
+        SimulatedEvent purchaseEvent;
+
+        long TicketStockCount;
+        bool LowStockNotificationSent = false; 
 
         public KioskDevice(string deviceId, string connectionString) : base(deviceId, connectionString)
         {
-            base.deviceType = "Kiosk";
+            this.deviceType = "Kiosk";
+            this.TicketStockCount = 100; 
+
 
             // set up any simulated events for this device
-            purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync);
+            purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloud);
             this.EventList.Add(purchaseEvent);
 
             // register any callbacks
             this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
         }
 
-        private bool SendPurchaseTicketMessageToCloudAsync()
+        private bool SendPurchaseTicketMessageToCloud()
         {
             var random = new Random();
             PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
@@ -41,21 +46,7 @@ namespace Transportation.Demo.Devices.Kiosk
             };
 
             var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);
-
-            var eventJsonBytes = Encoding.UTF8.GetBytes(messageString);
-            var message = new Microsoft.Azure.Devices.Client.Message(eventJsonBytes)
-            {
-                ContentEncoding = "utf-8",
-                ContentType = "application/json"
-            };
-
-            // Add a custom application property to the message.
-            // An IoT hub can filter on these properties without access to the message body.
-            var messageProperties = message.Properties;
-            messageProperties.Add("deviceId", this.deviceId);
-
-            // Send the telemetry message
-            this.deviceClient.SendMessageAsync(messageString).Wait();
+            SendMessageToCloud(messageString);
 
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
@@ -67,14 +58,19 @@ namespace Transportation.Demo.Devices.Kiosk
         private Task<MethodResponse> ReceivePurchaseTicketResponse(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
+            PurchaseTicketPayload purchaseResponse = JsonConvert.DeserializeObject<PurchaseTicketPayload>(data);
+
             var json = JObject.Parse(data); //methodRequest.DataAsJson;
-            string transactionId = json["TransactionId"].ToString();
-            bool isApproved = (bool)json["IsApproved"];
 
             Console.WriteLine("Executed direct method: " + methodRequest.Name);
-            Console.WriteLine($"Transaction Id: {transactionId}");
-            Console.WriteLine($"IsApproved: {isApproved}");
+            Console.WriteLine($"Transaction Id: {purchaseResponse.TransactionId}");
+            Console.WriteLine($"IsApproved: {purchaseResponse.IsApproved}");
             Console.WriteLine();
+
+            if (purchaseResponse.IsApproved)
+            {
+                SendTicketIssuedMessageToCloud(purchaseResponse); 
+            }
 
             // Acknowlege the direct method call with a 200 success message
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
@@ -83,6 +79,59 @@ namespace Transportation.Demo.Devices.Kiosk
             purchaseEvent.Start();
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
+        }
+
+        private bool SendTicketIssuedMessageToCloud(PurchaseTicketPayload requestpayload)
+        {
+            this.TicketStockCount--; 
+
+            var random = new Random();
+            IssueTicketRequest issueTicketRequest = new IssueTicketRequest()
+            {
+                DeviceId = this.deviceId,
+                DeviceType = this.deviceType,
+                MessageType = "TicketIssued",
+                TransactionId = requestpayload.TransactionId,
+                CreateTime = System.DateTime.UtcNow
+            };
+
+            var messageString = JsonConvert.SerializeObject(issueTicketRequest);
+            SendMessageToCloud(messageString);
+
+            this.deviceClient.SendMessageAsync(messageString).Wait();
+
+            Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
+            Console.WriteLine();
+
+            // if we've fallen below the threshold, send notification
+            if (this.TicketStockCount < 95 && !this.LowStockNotificationSent)
+            {
+                SendTLowStockMessageToCloud(); 
+            }
+
+            return false; // don't restart timer
+        }
+
+        private bool SendTLowStockMessageToCloud()
+        {
+            LowStockRequest lowStockNotification = new LowStockRequest()
+            {
+                DeviceId = this.deviceId,
+                DeviceType = this.deviceType,
+                MessageType = "LowStock",
+                StockLevel = this.TicketStockCount,
+                CreateTime = System.DateTime.UtcNow
+            };
+
+            var messageString = JsonConvert.SerializeObject(lowStockNotification);
+            SendMessageToCloud(messageString);
+
+            this.LowStockNotificationSent = true;
+
+            Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
+            Console.WriteLine();
+
+            return false; // don't restart timer
         }
     }
 }

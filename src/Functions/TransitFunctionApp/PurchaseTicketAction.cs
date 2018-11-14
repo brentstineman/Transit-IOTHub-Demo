@@ -24,6 +24,10 @@ namespace TransitFunctionApp
 
         public void Run()
         {
+            // 95% chance that ticket purchase is approved
+            Random gen = new Random();
+            bool purchaseApproved = gen.Next(100) <= 95;
+
             // process each message
             PurchaseTicketRequest ticketRequestMessage = JsonConvert.DeserializeObject<PurchaseTicketRequest>(payloadMessage);
 
@@ -37,7 +41,7 @@ namespace TransitFunctionApp
                 var payload = new PurchaseTicketPayload()
                 {
                     TransactionId = transactionId,
-                    IsApproved = true,
+                    IsApproved = purchaseApproved,
                     DeviceId = ticketRequestMessage.DeviceId,
                     DeviceType = ticketRequestMessage.DeviceType,
                     MessageType = ticketRequestMessage.MessageType,

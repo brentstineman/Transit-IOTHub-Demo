@@ -12,7 +12,7 @@ namespace Transportation.Demo.Shared.Models
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
         public string MethodName { get; set; }
-        public int StockLevel { get; set; }
+        public long StockLevel { get; set; }
 
     }
 }
