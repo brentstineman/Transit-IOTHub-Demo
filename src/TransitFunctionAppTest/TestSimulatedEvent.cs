@@ -19,7 +19,8 @@ namespace TransportationDemoTests
         public void Start()
         {
             started = true;
-            callbackLog.Add(callback_());
+            if (callback_!= null)
+                callbackLog.Add(callback_());
         }
 
         public void Stop()
