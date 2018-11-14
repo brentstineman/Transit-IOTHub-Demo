@@ -1,0 +1,8 @@
+{
+  "deviceId": "BrentGateReader",
+  "deviceType": "GateReader",
+  "initialDirection":  "in",
+  "events": [
+
+  ]
+}

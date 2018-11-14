@@ -1,4 +1,5 @@
 {
+  "verion":  "1.0.0",
   "deviceId": "BrentTicketKiosk",
   "deviceType": "TicketKiosk",
   "initialStockCount": 100,
