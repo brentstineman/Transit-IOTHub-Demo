@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Transportation.Demo.Devices.Base
@@ -10,17 +13,21 @@ namespace Transportation.Demo.Devices.Base
 
         protected TransportationDeviceClient deviceClient;
         private string connectionString;
+        protected dynamic deviceSettings; 
 
         protected string deviceId;
         protected string deviceType;
 
-        public BaseDevice(string deviceId, string connectionString)
+        public BaseDevice(string deviceConfigFile, string connectionString)
         {
-            this.deviceId = deviceId;
             this.connectionString = connectionString; // save this for later
 
             // Connect to the IoT hub using the MQTT protocol
             deviceClient = new TransportationDeviceClient(connectionString);
+
+            deviceSettings = GetRuntimeSettings(deviceConfigFile);
+            this.deviceId = deviceSettings.deviceId;
+            this.deviceType = deviceSettings.deviceType;
 
             // ?? validate device ID on instantiation ?? 
         }
@@ -59,6 +66,20 @@ namespace Transportation.Demo.Devices.Base
             // Send the telemetry message
             this.deviceClient.SendMessageAsync(messageString).Wait();
 
+        }
+
+        private dynamic GetRuntimeSettings(string fileLocation)
+        {
+            dynamic resultValue; 
+
+            // read JSON directly from a file
+            using (StreamReader file = File.OpenText(fileLocation))
+            using (JsonTextReader reader = new JsonTextReader(file))
+            {
+                resultValue = (JObject)JToken.ReadFrom(reader);
+            }
+
+            return resultValue;
         }
     }
 }

@@ -17,11 +17,9 @@ namespace Transportation.Demo.Devices.Kiosk
         long TicketStockCount;
         bool LowStockNotificationSent = false; 
 
-        public KioskDevice(string deviceId, string connectionString) : base(deviceId, connectionString)
+        public KioskDevice(string deviceConfigFile, string connectionString) : base(deviceConfigFile, connectionString)
         {
-            this.deviceType = "Kiosk";
-            this.TicketStockCount = 100; 
-
+            this.TicketStockCount = this.deviceSettings.initialStockCount; 
 
             // set up any simulated events for this device
             purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloud);
@@ -85,7 +83,6 @@ namespace Transportation.Demo.Devices.Kiosk
         {
             this.TicketStockCount--; 
 
-            var random = new Random();
             IssueTicketRequest issueTicketRequest = new IssueTicketRequest()
             {
                 DeviceId = this.deviceId,
@@ -104,7 +101,7 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine();
 
             // if we've fallen below the threshold, send notification
-            if (this.TicketStockCount < 95 && !this.LowStockNotificationSent)
+            if (this.TicketStockCount < (int)this.deviceSettings.lowStockThreshold && !this.LowStockNotificationSent)
             {
                 SendTLowStockMessageToCloud(); 
             }

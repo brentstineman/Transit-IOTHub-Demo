@@ -1,0 +1,9 @@
+{
+  "deviceId": "BrentTicketKiosk",
+  "deviceType": "TicketKiosk",
+  "initialStockCount": 100,
+  "lowStockThreshold": 95,
+  "events": [
+
+  ]
+}

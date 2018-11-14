@@ -22,7 +22,7 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
 
             // create our simulated device
-            myKiosk = new KioskDevice(ConfigurationHandler.getConfig("AppSettings", "deviceId"), ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            myKiosk = new KioskDevice(ConfigurationHandler.getConfig("AppSettings", "deviceConfig"), ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
             // start the device running
             myKiosk.StartAllEvents();
 

@@ -1,6 +1,6 @@
 {
   "AppSettings": {
     "IoTConnectionString": "PutHereYourConnectionString",
-    "deviceId": "myDeviceId"
+    "deviceConfig": "myDeviceId"
   }
 }
