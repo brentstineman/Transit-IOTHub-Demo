@@ -5,21 +5,31 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
-        SimulatedEvent purchaseEvent; 
+        ISimulatedEvent purchaseEvent;
 
-        public KioskDevice(string deviceId, string connectionString) : base(deviceId, connectionString)
+        public KioskDevice(string deviceId, string connectionString)
+            : this(deviceId, connectionString, new TransportationDeviceClient(connectionString),
+                  new TimedSimulatedEvent(5000, 2500))
+        {
+        }
+
+        public KioskDevice(string deviceId, string connectionString, IDeviceClient client, ISimulatedEventWithSetter simulatedEvent)
+            : base(deviceId, connectionString, client)
         {
             base.deviceType = "Kiosk";
 
             // set up any simulated events for this device
-            purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloudAsync);
+            simulatedEvent.SetCallback(this.SendPurchaseTicketMessageToCloudAsync);
+            purchaseEvent = simulatedEvent;
             this.EventList.Add(purchaseEvent);
 
             // register any callbacks

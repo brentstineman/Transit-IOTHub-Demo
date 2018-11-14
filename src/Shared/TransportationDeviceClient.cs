@@ -37,6 +37,5 @@ namespace Transportation.Demo.Shared
             var message = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(60 * 1));
             return message;
         }
-        
     }
 }
