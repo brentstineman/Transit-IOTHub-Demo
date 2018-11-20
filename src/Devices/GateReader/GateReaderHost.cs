@@ -12,8 +12,12 @@ namespace Transportation.Demo.Devices.GateReader
         {
             Console.WriteLine("Transportation Demo- Simulated Gate/Reader. Ctrl-C to exit.\n");
 
+            TransportationDeviceClient myClient = new TransportationDeviceClient(ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            EventScheduler myScheduler = new EventScheduler();
+
+
             // create our simulated device
-            myGateReader = new GateReaderDevice(ConfigurationHandler.getConfig("AppSettings", "deviceId"), ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            myGateReader = new GateReaderDevice(ConfigurationHandler.getConfig("AppSettings", "deviceId"), myClient, myScheduler);
             // start the device running
             myGateReader.StartAllEvents(); 
 

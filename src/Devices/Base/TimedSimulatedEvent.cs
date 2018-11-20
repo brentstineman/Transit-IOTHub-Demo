@@ -15,7 +15,7 @@ namespace Transportation.Demo.Devices.Base
         private eventDelegate timerfunction;
 
         // constructor
-        public TimedSimulatedEvent(double interval, double jitter)
+        public TimedSimulatedEvent(double interval, double jitter, eventDelegate callback = null)
         {
             // jitter must be a positive value
             if (jitter < 0)
@@ -29,11 +29,17 @@ namespace Transportation.Demo.Devices.Base
             else
                 this.interval = interval;
 
+            if (callback != null)
+            {
+                this.SetCallback(callback);
+            }
+
             eventTimer = new Timer();
             eventTimer.AutoReset = false; // don't automatically rerun the timer
             eventTimer.Elapsed += OnTimedEvent;
 
         }
+
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {

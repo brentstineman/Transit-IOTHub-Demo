@@ -14,23 +14,17 @@ namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
-        ISimulatedEvent purchaseEvent;
 
-        public KioskDevice(string deviceId, string connectionString)
-            : this(deviceId, connectionString, new TransportationDeviceClient(connectionString),
-                  new TimedSimulatedEvent(5000, 2500))
-        {
-        }
-
-        public KioskDevice(string deviceId, string connectionString, IDeviceClient client, ISimulatedEventWithSetter simulatedEvent)
-            : base(deviceId, connectionString, client)
+        public KioskDevice(string deviceId, IDeviceClient client, IEventScheduler eventScheduler)
+            : base(deviceId, client, eventScheduler)
         {
             base.deviceType = "Kiosk";
 
             // set up any simulated events for this device
+            TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(5000, 2500);
             simulatedEvent.SetCallback(this.SendPurchaseTicketMessageToCloudAsync);
-            purchaseEvent = simulatedEvent;
-            this.EventList.Add(purchaseEvent);
+
+            this.eventScheduler.Add(simulatedEvent);
 
             // register any callbacks
             this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
@@ -90,7 +84,7 @@ namespace Transportation.Demo.Devices.Kiosk
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart timer
-            purchaseEvent.Start();
+            this.eventScheduler.StartAll(); // TODO: need more elegant solution
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }
