@@ -1,6 +1,9 @@
 ﻿using Microsoft.Azure.Devices.Client;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Dynamic;
 
 namespace Transportation.Demo.Shared
 {
@@ -28,6 +31,23 @@ namespace Transportation.Demo.Shared
                 var result = func(item);
                 yield return result;
             }
+        }
+
+        public static ExpandoObject ToExpandoObject(this object obj)
+        {
+            if (obj is null)
+            {
+                return null;
+            }
+
+            var expando = new ExpandoObject() as IDictionary<string, object>;
+
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(obj.GetType()))
+            {
+                expando.Add(property.Name, property.GetValue(obj));
+            }
+
+            return (ExpandoObject)expando;
         }
     }
 }

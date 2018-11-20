@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Text;
 using Transportation.Demo.Shared.Models;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
@@ -21,36 +22,7 @@ namespace Transportation.Demo.Devices.Kiosk
     {
         public static TransportationDeviceClient deviceClient;
         public static string connectionString;
-        //private static Microsoft.Azure.Devices.Client.DeviceClient _deviceClient;
-
-        // Async method to send simulated telemetry
-        private static async void SendDeviceToCloudMessagesAsync()
-        {
-
-            // Initial telemetry values
-            double minTemperature = 20;
-            double minHumidity = 60;
-            Random random = new Random();
-
-            while (true)
-            {
-                double currentTemperature = minTemperature + random.NextDouble() * 15;
-                double currentHumidity = minHumidity + random.NextDouble() * 20;
-
-                // Create JSON message
-                var telemetryDataPoint = new
-                {
-                    temperature = currentTemperature,
-                    humidity = currentHumidity
-                };
-                var messageString = JsonConvert.SerializeObject(telemetryDataPoint);
-
-                // Send the message
-                await deviceClient.SendMessageAsync(messageString);
-                Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
-
-            }
-        }
+        
         private static void Main(string[] args)
         {
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
@@ -59,17 +31,14 @@ namespace Transportation.Demo.Devices.Kiosk
             connectionString = getConfig("AppSettings", "IoTConnectionString");
             deviceClient = new TransportationDeviceClient(connectionString);
             RegisterDirectMethods();
-            while (true)
-            {
-                SendPurchaseTicketMessageToCloudAsync();
 
-                Thread.Sleep(30000);
+            var act = new Action(()=> { SendMessage(GeneratePurchaseTicket()); });
+            var ps = new ProcessScheduler(act, 30, 2);
 
-            }
             Console.ReadLine();
         }
 
-        private static async void SendPurchaseTicketMessageToCloudAsync()
+        private static string GeneratePurchaseTicket()
         {
             var random = new Random();
             PurchaseTicketRequest purchaseTicketRequest = new PurchaseTicketRequest()
@@ -78,30 +47,25 @@ namespace Transportation.Demo.Devices.Kiosk
                 DeviceType = "Kiosk",
                 MessageType = "Purchase",
                 TransactionId = Guid.NewGuid().ToString(),
-                CreateTime = System.DateTime.UtcNow,
+                CreateTime = DateTime.UtcNow,
                 Price = random.Next(2, 100),
                 MethodName = "ReceivePurchaseTicketResponse"
             };
 
             var messageString = JsonConvert.SerializeObject(purchaseTicketRequest);
 
-            var eventJsonBytes = Encoding.UTF8.GetBytes(messageString);
-            var message = new Microsoft.Azure.Devices.Client.Message(eventJsonBytes)
-            {
-                ContentEncoding = "utf-8",
-                ContentType = "application/json"
-            };
-
-            // Add a custom application property to the message.
-            // An IoT hub can filter on these properties without access to the message body.
-            var messageProperties = message.Properties;
-            messageProperties.Add("deviceId", "rjTest");
-
-            // Send the telemetry message
-            await deviceClient.SendMessageAsync(messageString);
-            Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
-            Console.WriteLine();
+            return messageString;
+            
         }
+
+        private static async void SendMessage(string message)
+        {
+            await deviceClient.SendMessageAsync(message);
+            Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, message);
+            Console.WriteLine();
+        } 
+
+       
 
         public static string getConfig(string section, string key)
         {
@@ -110,8 +74,6 @@ namespace Transportation.Demo.Devices.Kiosk
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
             IConfigurationRoot configuration = builder.Build();
-            // configurationSection.Key => FilePath
-            // configurationSection.Value => C:\\temp\\logs\\output.txt
             IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
             return configurationSection.Value;
 
@@ -122,39 +84,16 @@ namespace Transportation.Demo.Devices.Kiosk
             await deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse);
         }
 
-        /// <summary>
-        /// Provides an Example of a Direct Method
-        /// Feel free to use this as a template and then delete this once we have this implemented
-        /// 
-        /// The name of the method should exactly match what the direct method string is being called from the IoT Hub.
-        /// </summary>
-        /// <param name="methodRequest"></param>
-        /// <param name="userContext"></param>
-        /// <returns></returns>
-        private static Task<MethodResponse> DirectMethodExample(MethodRequest methodRequest, object userContext)
-        {
-            Console.WriteLine($"\t *** {nameof(DirectMethodExample)} was called.");
-
-            Console.WriteLine();
-            Console.WriteLine("\t{0}", methodRequest.DataAsJson);
-            Console.WriteLine();
-
-            return Task.FromResult(new MethodResponse(new byte[0], 200));
-        }
-
-        // Handle the direct method call
         private static Task<MethodResponse> ReceivePurchaseTicketResponse (MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
             var json = methodRequest.DataAsJson;
-
 
             Console.WriteLine("Executed direct method: " + methodRequest.Name);
 
             // Acknowlege the direct method call with a 200 success message
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
-
         }
     }
 }
