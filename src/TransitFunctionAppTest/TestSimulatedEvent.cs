@@ -14,6 +14,11 @@ namespace TransportationDemoTests
             this.callback_ = callback;
         }
 
+        public eventDelegate getEventDelegate()
+        {
+            return this.callback_;
+        }
+
         public bool started = false;
         public List<bool> callbackLog = new List<bool>();
         public void Start()

@@ -12,7 +12,7 @@ namespace Transportation.Demo.Devices.Base
         // return true is ready to continue, otherwise return false
         private long eventCount = 0;
 
-        private eventDelegate timerfunction;
+        private eventDelegate timerDelegate;
 
         // constructor
         public TimedSimulatedEvent(double interval, double jitter, eventDelegate callback = null)
@@ -40,6 +40,10 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
+        public eventDelegate getEventDelegate()
+        {
+            return this.timerDelegate;
+        }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
@@ -47,7 +51,7 @@ namespace Transportation.Demo.Devices.Base
             Console.WriteLine("The Elapsed event #{0} was raised at {1:HH:mm:ss.fff}", this.eventCount, e.SignalTime);
 
             // execute our event
-            if (this.timerfunction != null && this.timerfunction()) // if the function returned "true", restart the timer. 
+            if (this.timerDelegate != null && this.timerDelegate()) // if the function returned "true", restart the timer. 
             {                          
                 this.Start(); // restart the timer for our next run 
             }
@@ -80,7 +84,7 @@ namespace Transportation.Demo.Devices.Base
 
         public void SetCallback(eventDelegate callback)
         {
-            this.timerfunction = callback;
+            this.timerDelegate = callback;
         }
     }
 }

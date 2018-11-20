@@ -9,12 +9,14 @@ namespace TransportationDemoTests.ModelsTests
     [TestFixture]
     class BaseDeviceTest
     {
-        TestSimulatedEvent simulatedEvent1 = new TestSimulatedEvent();
-        TestSimulatedEvent simulatedEvent2 = new TestSimulatedEvent();
 
         [Test]
         public void TestCreateBaseDevice()
         {
+            FakeDeviceClient myClient = new FakeDeviceClient();
+            FakeEventScheduler myScheduler = new FakeEventScheduler();
+            string myDeviceId = "myFakeDevice";
+
             BaseDevice device = new BaseDevice("device1", "connection1", null);
             device.EventList.Add(simulatedEvent1);
             device.EventList.Add(simulatedEvent2);

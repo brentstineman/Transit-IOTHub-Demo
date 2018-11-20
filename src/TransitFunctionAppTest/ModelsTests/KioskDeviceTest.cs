@@ -13,7 +13,7 @@ namespace TransportationDemoTests
         [Test]
         public void TestDeviceEvent()
         {
-            KioskDevice device = new KioskDevice("device1", "connection1", fakeDeviceClient, simulatedEvent);
+            KioskDevice device = new KioskDevice("device1", fakeDeviceClient, simulatedEvent);
 
             // Make sure the device has one event callback registered.
             Assert.AreEqual(device.EventList.Count, 1);

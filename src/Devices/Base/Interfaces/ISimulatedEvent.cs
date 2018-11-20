@@ -6,6 +6,8 @@ namespace Transportation.Demo.Devices.Base.Interfaces
 {
     public interface ISimulatedEvent
     {
+        eventDelegate getEventDelegate();
+
         void Start();
         void Stop();
     }
