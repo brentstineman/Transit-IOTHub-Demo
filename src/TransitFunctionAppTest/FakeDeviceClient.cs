@@ -11,6 +11,9 @@ namespace TransportationDemoTests
     public class FakeDeviceClient : IDeviceClient
     {
         private Queue<Message> messages = new Queue<Message>();
+        public List<string> sendMessageLog = new List<string>();
+        public List<MethodCallback> directMethods = new List<MethodCallback>();
+
 
         public void AddFakeMessage(Stream stream)
         {
@@ -26,14 +29,13 @@ namespace TransportationDemoTests
             return Task<Message>.Factory.StartNew(() => null);
         }
 
-        public MethodCallback callback_;
         public Task RegisterDirectMethodAsync(MethodCallback methodHandler)
         {
-            callback_ = methodHandler;
+            directMethods.Add(methodHandler);
+
             return Task.Factory.StartNew(() => { });
         }
 
-        public List<string> sendMessageLog = new List<string>();
         public Task SendMessageAsync(string msg)
         {
             sendMessageLog.Add(msg);
