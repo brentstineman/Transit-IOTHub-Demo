@@ -11,10 +11,7 @@ namespace TransportationDemoTests
     [TestFixture]
     class KioskDeviceTest
     {
-        FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
-        FakeEventScheduler fakeScheduler = new FakeEventScheduler();
-
-        KioskDeviceConfig deviceconfig;
+        private KioskDeviceConfig deviceconfig;
 
         // test initialization
         public KioskDeviceTest()
@@ -32,6 +29,9 @@ namespace TransportationDemoTests
         [Test]
         public void TestBaseKioskDevice()
         {
+            FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
+            FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+
             TestContext.WriteLine(">>Testing the Kiosk Device's base functionality..");
 
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
@@ -46,6 +46,9 @@ namespace TransportationDemoTests
         [Test]
         public void TestKioskPurchaseTicket()
         {
+            FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
+            FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+
             TestContext.WriteLine("\n>> Testing the purchase ticket simulated event..");
 
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
@@ -102,20 +105,23 @@ namespace TransportationDemoTests
         [Test]
         public void TestLowStock()
         {
-            TestContext.WriteLine(">> Testing the Kiosk Device's Low Stock Ticket..");
+            FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
+            FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+
+            TestContext.WriteLine(">> Testing the Kiosk Device's Low Stock notification..");
+
+            PurchaseTicketPayload approvePurchaseMethodkRequest = new PurchaseTicketPayload()
+            {
+                DeviceId = deviceconfig.DeviceId,
+                DeviceType = deviceconfig.DeviceType,
+                MessageType = "Purchase",
+                IsApproved = true
+            };
 
             // create our test device
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
-            TestContext.WriteLine(">> Purchasing tickets, shouldn't throw event");
-
-            PurchaseTicketPayload approvePurchaseMethodkRequest = new PurchaseTicketPayload()
-            {
-                IsApproved = true,
-                DeviceId = deviceconfig.DeviceId,
-                DeviceType = deviceconfig.DeviceType,
-                MessageType = "Purchase",
-            };
+            TestContext.WriteLine("/n>> Purchasing tickets, shouldn't throw event");
             string requestString = JsonConvert.SerializeObject(approvePurchaseMethodkRequest);
             MethodRequest methodRequest = new MethodRequest("ReceivePurchaseTicketResponse", Encoding.UTF8.GetBytes(requestString));
 
@@ -123,13 +129,13 @@ namespace TransportationDemoTests
             for (long count = this.deviceconfig.InitialStockCount; count > this.deviceconfig.LowStockThreshold; count--)
             {
                 MethodResponse myresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
+                TestContext.WriteLine(">> Current stock level: " + device.CurrentStockLevel);
             }
 
             // now that we're at the threshold, lets clear all previous events
             fakeDeviceClient.sendMessageLog.Clear(); // clear out all messages to this point
 
-            TestContext.WriteLine(">> Purchasing 1 more ticket. Should send low stock notification");
-
+            TestContext.WriteLine("/n>> Purchasing 1 more ticket. Should send low stock notification");
             // purchase one more ticket. 
             MethodResponse methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
             // we expect 2 messages to have been sent
@@ -151,7 +157,13 @@ namespace TransportationDemoTests
             Assert.AreEqual(actualRequest.MessageType, expectedRequest.MessageType);
             Assert.AreEqual(actualRequest.StockLevel, expectedRequest.StockLevel);
 
-
+            TestContext.WriteLine("/n>> Testing to make sure we don't have a second low stock warning ..");
+            // make sure we don't throw the low stock warning again
+            fakeDeviceClient.sendMessageLog.Clear(); // clear out all messages to this point
+            // purchase one more ticket. 
+            methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
+            // we expect 2 messages to have been sent
+            Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 1);
         }
     }
 }

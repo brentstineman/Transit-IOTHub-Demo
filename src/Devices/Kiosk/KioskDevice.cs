@@ -14,10 +14,10 @@ namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
-         KioskDeviceConfig deviceConfig; 
+        private KioskDeviceConfig deviceConfig; 
 
-        long TicketStockCount;
-        bool LowStockNotificationSent = false; 
+        private long TicketStockCount;
+        private bool LowStockNotificationSent = false; 
 
         public KioskDevice(KioskDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) : base(deviceConfig, client, eventScheduler)
         {
