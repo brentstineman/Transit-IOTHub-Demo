@@ -40,6 +40,13 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
+        public bool IsRunning
+        {
+            get
+            {
+                return eventTimer.Enabled;
+            }
+        }
         public eventDelegate getEventDelegate()
         {
             return this.timerDelegate;

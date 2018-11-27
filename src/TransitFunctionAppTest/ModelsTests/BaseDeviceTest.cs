@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Devices.Base.Interfaces;
 
 namespace TransportationDemoTests.ModelsTests
 {
@@ -13,21 +14,31 @@ namespace TransportationDemoTests.ModelsTests
         [Test]
         public void TestCreateBaseDevice()
         {
-            FakeDeviceClient myClient = new FakeDeviceClient();
-            FakeEventScheduler myScheduler = new FakeEventScheduler();
             string myDeviceId = "myFakeDevice";
+            FakeDeviceClient myClient = new FakeDeviceClient();
 
-            BaseDevice device = new BaseDevice(myDeviceId, myClient, null);
-            //device.EventList.Add(simulatedEvent1);
-            //device.EventList.Add(simulatedEvent2);
-            //device.StartAllEvents();
-            //// make sure the events have started
-            //Assert.IsTrue(simulatedEvent1.started);
-            //Assert.IsTrue(simulatedEvent2.started);
-            //// Testing that StopAllEvents actually stops the simulated events.
-            //device.StopAllEvents();
-            //Assert.IsFalse(simulatedEvent1.started);
-            //Assert.IsFalse(simulatedEvent2.started);
+            TimedSimulatedEvent simulatedEvent1 = new TimedSimulatedEvent(2000, 1000, this.EmptyTimeEvent);
+            TimedSimulatedEvent simulatedEvent2 = new TimedSimulatedEvent(2000, 1000, this.EmptyTimeEvent);
+
+            EventScheduler myScheduler = new EventScheduler();
+            myScheduler.Add(simulatedEvent1);
+            myScheduler.Add(simulatedEvent2);
+
+
+            BaseDevice device = new BaseDevice(myDeviceId, myClient, myScheduler);
+            device.StartAllEvents();
+            // make sure the events have started
+            Assert.IsTrue(simulatedEvent1.IsRunning);
+            Assert.IsTrue(simulatedEvent2.IsRunning);
+            // Testing that StopAllEvents actually stops the simulated events.
+            device.StopAllEvents();
+            Assert.IsFalse(simulatedEvent1.IsRunning);
+            Assert.IsFalse(simulatedEvent2.IsRunning);
+        }
+
+        private bool EmptyTimeEvent()
+        {
+            return true;
         }
     }
 }
