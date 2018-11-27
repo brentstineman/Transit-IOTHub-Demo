@@ -4,49 +4,39 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Devices.Base.Interfaces;
+using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Base
 {
     public class BaseDevice
     {
-        public List<SimulatedEvent> EventList = new List<SimulatedEvent>();
-
-        protected TransportationDeviceClient deviceClient;
-        private string connectionString;
-        protected dynamic deviceSettings; 
+        protected IEventScheduler eventScheduler;
+        protected IDeviceClient deviceClient;
 
         protected string deviceId;
         protected string deviceType;
 
-        public BaseDevice(string deviceConfigFile, string connectionString)
+        public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
-            this.connectionString = connectionString; // save this for later
+            this.eventScheduler = eventScheduler;
+            this.deviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
-            // Connect to the IoT hub using the MQTT protocol
-            deviceClient = new TransportationDeviceClient(connectionString);
-
-            deviceSettings = GetRuntimeSettings(deviceConfigFile);
-            this.deviceId = deviceSettings.deviceId;
-            this.deviceType = deviceSettings.deviceType;
+            this.deviceId = deviceConfig.DeviceId;
+            this.deviceType = deviceConfig.DeviceType;
 
             // ?? validate device ID on instantiation ?? 
         }
 
         public void StartAllEvents()
         {
-            foreach(SimulatedEvent myevent in EventList)
-            {
-                myevent.Start();
-            }
+            eventScheduler.StartAll(); 
         }
 
         public void StopAllEvents()
         {
-            foreach (SimulatedEvent myevent in EventList)
-            {
-                myevent.Stop();
-            }
-
+            eventScheduler.StopAll();
         }
 
         public void SendMessageToCloud (string messageString)
@@ -68,18 +58,5 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
-        private dynamic GetRuntimeSettings(string fileLocation)
-        {
-            dynamic resultValue; 
-
-            // read JSON directly from a file
-            using (StreamReader file = File.OpenText(fileLocation))
-            using (JsonTextReader reader = new JsonTextReader(file))
-            {
-                resultValue = (JObject)JToken.ReadFrom(reader);
-            }
-
-            return resultValue;
-        }
     }
 }

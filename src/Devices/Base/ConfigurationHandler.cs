@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Text;
 using Transportation.Demo.Shared.Models;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -20,11 +21,17 @@ namespace Transportation.Demo.Devices.Base
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
             IConfigurationRoot configuration = builder.Build();
-            // configurationSection.Key => FilePath
-            // configurationSection.Value => C:\\temp\\logs\\output.txt
+
             IConfigurationSection configurationSection = configuration.GetSection(section).GetSection(key);
             return configurationSection.Value;
 
         }
+
+        public static string GetDeviceRuntimeSettings(string configurationSetting)
+        {
+            // TODO: put some error handling around the file access 
+            return System.IO.File.ReadAllText(ConfigurationHandler.getConfig("AppSettings", configurationSetting));
+        }
     }
+
 }

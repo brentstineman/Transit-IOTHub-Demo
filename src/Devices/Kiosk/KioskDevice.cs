@@ -5,28 +5,38 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
     public class KioskDevice : BaseDevice
     {
-        SimulatedEvent purchaseEvent;
+         KioskDeviceConfig deviceConfig; 
 
         long TicketStockCount;
         bool LowStockNotificationSent = false; 
 
-        public KioskDevice(string deviceConfigFile, string connectionString) : base(deviceConfigFile, connectionString)
+        public KioskDevice(KioskDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) : base(deviceConfig, client, eventScheduler)
         {
-            this.TicketStockCount = this.deviceSettings.initialStockCount; 
+            this.deviceConfig = deviceConfig;
+            this.TicketStockCount = deviceConfig.InitialStockCount; 
 
             // set up any simulated events for this device
-            purchaseEvent = new SimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloud);
-            this.EventList.Add(purchaseEvent);
+            TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(5000, 2500);
+            simulatedEvent.SetCallback(this.SendPurchaseTicketMessageToCloud);
 
-            // register any callbacks
+            this.eventScheduler.Add(simulatedEvent);
+
+            // register any direct methods we're to recieve
             this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
+        }
+
+        public long CurrentStockLevel
+        {
+           get { return this.TicketStockCount; }
         }
 
         private bool SendPurchaseTicketMessageToCloud()
@@ -74,7 +84,7 @@ namespace Transportation.Demo.Devices.Kiosk
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart timer
-            purchaseEvent.Start();
+            this.eventScheduler.StartAll(); // TODO: need more elegant solution
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }
@@ -95,13 +105,11 @@ namespace Transportation.Demo.Devices.Kiosk
             var messageString = JsonConvert.SerializeObject(issueTicketRequest);
             SendMessageToCloud(messageString);
 
-            this.deviceClient.SendMessageAsync(messageString).Wait();
-
             Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
             Console.WriteLine();
 
             // if we've fallen below the threshold, send notification
-            if (this.TicketStockCount < (int)this.deviceSettings.lowStockThreshold && !this.LowStockNotificationSent)
+            if (this.TicketStockCount < (int)this.deviceConfig.LowStockThreshold && !this.LowStockNotificationSent)
             {
                 SendTLowStockMessageToCloud(); 
             }

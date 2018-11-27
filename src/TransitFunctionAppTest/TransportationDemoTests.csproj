@@ -9,10 +9,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="NUnit" Version="3.11.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Devices\Base\Transportation.Demo.Devices.Base.csproj" />
+    <ProjectReference Include="..\Devices\GateReader\Transportation.Demo.Devices.GateReader.csproj" />
+    <ProjectReference Include="..\Devices\Kiosk\Transportation.Demo.Devices.Kiosk.csproj" />
     <ProjectReference Include="..\Functions\TransitFunctionApp\Transportation.Demo.Functions.csproj" />
   </ItemGroup>
 

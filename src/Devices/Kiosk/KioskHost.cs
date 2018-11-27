@@ -21,8 +21,16 @@ namespace Transportation.Demo.Devices.Kiosk
         {
             Console.WriteLine("Transportation Demo- Simulated device. Ctrl-C to exit.\n");
 
+            // setup the items used by the simulated device
+            TransportationDeviceClient myClient = new TransportationDeviceClient(ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            EventScheduler myScheduler = new EventScheduler();
+
+            // get device configuration details from JSON file
+            KioskDeviceConfig deviceConfig = JsonConvert.DeserializeObject<KioskDeviceConfig>(ConfigurationHandler.GetDeviceRuntimeSettings("deviceConfig"));
+
             // create our simulated device
-            myKiosk = new KioskDevice(ConfigurationHandler.getConfig("AppSettings", "deviceConfig"), ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            myKiosk = new KioskDevice(deviceConfig, myClient, myScheduler);
+
             // start the device running
             myKiosk.StartAllEvents();
 
@@ -31,7 +39,5 @@ namespace Transportation.Demo.Devices.Kiosk
                 Thread.Sleep(30000);
             }
         }
-
- 
     }
 }

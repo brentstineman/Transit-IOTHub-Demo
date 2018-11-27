@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Threading;
 using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.GateReader
 {
@@ -12,8 +14,15 @@ namespace Transportation.Demo.Devices.GateReader
         {
             Console.WriteLine("Transportation Demo- Simulated Gate/Reader. Ctrl-C to exit.\n");
 
+            // setup the items used by the simulated device
+            TransportationDeviceClient myClient = new TransportationDeviceClient(ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            EventScheduler myScheduler = new EventScheduler();
+
+            // get device configuration details from JSON file
+            BaseDeviceConfig deviceConfig = JsonConvert.DeserializeObject<BaseDeviceConfig>(ConfigurationHandler.GetDeviceRuntimeSettings("deviceConfig"));
             // create our simulated device
-            myGateReader = new GateReaderDevice(ConfigurationHandler.getConfig("AppSettings", "deviceConfig"), ConfigurationHandler.getConfig("AppSettings", "IoTConnectionString"));
+            myGateReader = new GateReaderDevice(deviceConfig, myClient, myScheduler);
+
             // start the device running
             myGateReader.StartAllEvents(); 
 

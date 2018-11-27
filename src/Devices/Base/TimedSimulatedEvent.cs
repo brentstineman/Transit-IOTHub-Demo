@@ -1,21 +1,21 @@
 using System;
 using System.Timers;
+using Transportation.Demo.Devices.Base.Interfaces;
 
 namespace Transportation.Demo.Devices.Base
 {
-    public class SimulatedEvent
+    public class TimedSimulatedEvent : ISimulatedEventWithSetter
     {
         private Timer eventTimer;
         private double interval;
         private double jitter; 
         // return true is ready to continue, otherwise return false
-        public delegate bool eventDelegate();
         private long eventCount = 0;
 
-        private eventDelegate timerfunction;
+        private eventDelegate timerDelegate;
 
         // constructor
-        public SimulatedEvent(double interval, double jitter, eventDelegate timerfunction)
+        public TimedSimulatedEvent(double interval, double jitter, eventDelegate callback = null)
         {
             // jitter must be a positive value
             if (jitter < 0)
@@ -29,12 +29,27 @@ namespace Transportation.Demo.Devices.Base
             else
                 this.interval = interval;
 
-            this.timerfunction = timerfunction;
+            if (callback != null)
+            {
+                this.SetCallback(callback);
+            }
 
             eventTimer = new Timer();
             eventTimer.AutoReset = false; // don't automatically rerun the timer
             eventTimer.Elapsed += OnTimedEvent;
 
+        }
+
+        public bool IsRunning
+        {
+            get
+            {
+                return eventTimer.Enabled;
+            }
+        }
+        public eventDelegate getEventDelegate()
+        {
+            return this.timerDelegate;
         }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
@@ -43,7 +58,7 @@ namespace Transportation.Demo.Devices.Base
             Console.WriteLine("The Elapsed event #{0} was raised at {1:HH:mm:ss.fff}", this.eventCount, e.SignalTime);
 
             // execute our event
-            if (this.timerfunction()) // if the function returned "true", restart the timer. 
+            if (this.timerDelegate != null && this.timerDelegate()) // if the function returned "true", restart the timer. 
             {                          
                 this.Start(); // restart the timer for our next run 
             }
@@ -53,7 +68,7 @@ namespace Transportation.Demo.Devices.Base
         public void Start()
         {
             eventTimer.Interval = this.CalculateNextInterval(); // set new interval
-            eventTimer.Start(); 
+            eventTimer.Start();
         }
 
         // Stops the event's internal timer
@@ -73,6 +88,10 @@ namespace Transportation.Demo.Devices.Base
         { 
             return this.interval - this.CalculateJitter(); 
         }
-        
+
+        public void SetCallback(eventDelegate callback)
+        {
+            this.timerDelegate = callback;
+        }
     }
 }
