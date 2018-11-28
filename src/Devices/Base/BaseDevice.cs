@@ -1,45 +1,68 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.IO;
 using System.Text;
+using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Devices.Base.Interfaces;
+using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Base
 {
     public class BaseDevice
     {
-        public List<SimulatedEvent> EventList = new List<SimulatedEvent>();
-
-        protected TransportationDeviceClient deviceClient;
-        private string connectionString;
+        protected IEventScheduler eventScheduler;
+        protected IDeviceClient deviceClient;
 
         protected string deviceId;
         protected string deviceType;
 
-        public BaseDevice(string deviceId, string connectionString)
+        public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
-            this.deviceId = deviceId;
-            this.connectionString = connectionString; // save this for later
+            if (deviceConfig == null || client == null || eventScheduler == null)
+            {
+                throw new ArgumentNullException("one or more parameters are null. All parameters must be provided");
+            }
 
-            // Connect to the IoT hub using the MQTT protocol
-            deviceClient = new TransportationDeviceClient(connectionString);
+            this.eventScheduler = eventScheduler;
+            this.deviceClient = client;  // Connect to the IoT hub using the MQTT protocol
+
+            this.deviceId = deviceConfig.DeviceId;
+            this.deviceType = deviceConfig.DeviceType;
 
             // ?? validate device ID on instantiation ?? 
         }
 
         public void StartAllEvents()
         {
-            foreach(SimulatedEvent myevent in EventList)
-            {
-                myevent.Start();
-            }
+            eventScheduler.StartAll(); 
         }
 
         public void StopAllEvents()
         {
-            foreach (SimulatedEvent myevent in EventList)
+            eventScheduler.StopAll();
+        }
+
+        public void SendMessageToCloud (string messageString)
+        {
+            var eventJsonBytes = Encoding.UTF8.GetBytes(messageString);
+            var clientMessage = new Microsoft.Azure.Devices.Client.Message(eventJsonBytes)
             {
-                myevent.Stop();
-            }
+                ContentEncoding = "utf-8",
+                ContentType = "application/json"
+            };
+
+            // Add a custom application property to the message.
+            // An IoT hub can filter on these properties without access to the message body.
+            var messageProperties = clientMessage.Properties;
+            messageProperties.Add("deviceId", this.deviceId);
+
+            // Send the telemetry message
+            this.deviceClient.SendMessageAsync(messageString).Wait();
 
         }
+
     }
 }
