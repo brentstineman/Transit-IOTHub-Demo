@@ -103,6 +103,37 @@ namespace TransportationDemoTests
         }
 
         [Test]
+        public void TestPurchaseDenied()
+        {
+            FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
+            FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+
+            TestContext.WriteLine(">> Testing the Kiosk Device's Low Stock notification..");
+
+            PurchaseTicketPayload approvePurchaseMethodkRequest = new PurchaseTicketPayload()
+            {
+                DeviceId = deviceconfig.DeviceId,
+                DeviceType = deviceconfig.DeviceType,
+                MessageType = "Purchase",
+                IsApproved = false
+            };
+
+            // create our test device
+            KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
+
+            TestContext.WriteLine("/n>> Purchasing tickets, shouldn't throw event");
+            string requestString = JsonConvert.SerializeObject(approvePurchaseMethodkRequest);
+            MethodRequest methodRequest = new MethodRequest("ReceivePurchaseTicketResponse", Encoding.UTF8.GetBytes(requestString));
+
+            
+            MethodResponse myresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
+
+            // no ticket was issued
+            Assert.AreEqual(device.CurrentStockLevel, deviceconfig.InitialStockCount);
+            Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 0);
+        }
+    
+        [Test]
         public void TestLowStock()
         {
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();

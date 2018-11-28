@@ -17,7 +17,9 @@ namespace Transportation.Demo.Devices.Kiosk
         private KioskDeviceConfig deviceConfig; 
 
         private long TicketStockCount;
-        private bool LowStockNotificationSent = false; 
+        private bool LowStockNotificationSent = false;
+
+        private TimedSimulatedEvent purchaseticketEvent;
 
         public KioskDevice(KioskDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) : base(deviceConfig, client, eventScheduler)
         {
@@ -25,10 +27,10 @@ namespace Transportation.Demo.Devices.Kiosk
             this.TicketStockCount = deviceConfig.InitialStockCount; 
 
             // set up any simulated events for this device
-            TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(5000, 2500);
-            simulatedEvent.SetCallback(this.SendPurchaseTicketMessageToCloud);
+            purchaseticketEvent = new TimedSimulatedEvent(5000, 2500);
+            purchaseticketEvent.SetCallback(this.SendPurchaseTicketMessageToCloud);
 
-            this.eventScheduler.Add(simulatedEvent);
+            this.eventScheduler.Add(purchaseticketEvent);
 
             // register any direct methods we're to recieve
             this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
@@ -84,7 +86,7 @@ namespace Transportation.Demo.Devices.Kiosk
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart timer
-            this.eventScheduler.StartAll(); // TODO: need more elegant solution
+            this.purchaseticketEvent.Start(); // TODO: need more elegant solution
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }
