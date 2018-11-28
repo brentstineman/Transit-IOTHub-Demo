@@ -4,7 +4,7 @@ using Transportation.Demo.Devices.Base.Interfaces;
 
 namespace Transportation.Demo.Devices.Base
 {
-    public class TimedSimulatedEvent : ISimulatedEventWithSetter
+    public class TimedSimulatedEvent : ISimulatedEvent
     {
         private Timer eventTimer;
         private double interval;
@@ -14,7 +14,7 @@ namespace Transportation.Demo.Devices.Base
         private eventDelegate timerDelegate;
 
         // constructor
-        public TimedSimulatedEvent(double interval, double jitter, eventDelegate callback = null)
+        public TimedSimulatedEvent(double interval, double jitter, eventDelegate callback)
         {
             // jitter must be a positive value
             if (jitter < 0)
@@ -46,9 +46,13 @@ namespace Transportation.Demo.Devices.Base
                 return eventTimer.Enabled;
             }
         }
-        public eventDelegate getEventDelegate()
+
+        public eventDelegate EventDelegate
         {
-            return this.timerDelegate;
+            get
+            {
+                return this.timerDelegate;
+            }
         }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)

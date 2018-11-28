@@ -19,12 +19,22 @@ namespace Transportation.Demo.Devices.Base
             EventList.Add(simulatedEvent); 
         }
 
+        public void Start(int index)
+        {
+            EventList[index].Start();
+        }
+
         public void StartAll()
         {
             foreach (var myevent in EventList)
             {
                 myevent.Start();
             }
+        }
+
+        public void Stop(int index)
+        {
+            EventList[index].Stop();
         }
 
         public void StopAll()

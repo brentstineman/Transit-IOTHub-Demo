@@ -6,16 +6,20 @@ namespace Transportation.Demo.Devices.Base.Interfaces
 {
     public interface ISimulatedEvent
     {
-        eventDelegate getEventDelegate();
+        eventDelegate EventDelegate
+        {
+            get;
+        }
 
         void Start();
         void Stop();
+
+        bool IsRunning
+        {
+            get;
+        }
     }
 
     public delegate bool eventDelegate();
 
-    public interface ISimulatedEventWithSetter : ISimulatedEvent
-    {
-        void SetCallback(eventDelegate callback);
-    }
 }

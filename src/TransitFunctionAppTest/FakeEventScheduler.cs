@@ -1,28 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 
 namespace TransportationDemoTests
 {
     public class FakeEventScheduler : IEventScheduler
     {
-        public List<eventDelegate> EventList = new List<eventDelegate>();
+        public List<FakeTimedSimulatedEvent> EventList = new List<FakeTimedSimulatedEvent>();
 
         public void Add(ISimulatedEvent simulatedEvent)
         {
             // map inbound event to FakeEvent
-            EventList.Add(simulatedEvent.getEventDelegate());
+            this.EventList.Add(new FakeTimedSimulatedEvent(simulatedEvent));
+        }
+
+        public void Start(int index)
+        {
+            EventList[index].Start();
         }
 
         public void StartAll()
         {
-            // do nothing, this is a test
+            foreach (var myevent in EventList)
+            {
+                myevent.Start();
+            }
+        }
+
+        public void Stop(int index)
+        {
+            EventList[index].Stop();
         }
 
         public void StopAll()
         {
-            // do nothing, this is a test
+            foreach (var myevent in EventList)
+            {
+                myevent.Stop();
+            }
         }
     }
 }

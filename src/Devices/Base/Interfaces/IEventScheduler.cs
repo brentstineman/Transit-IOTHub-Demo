@@ -8,7 +8,11 @@ namespace Transportation.Demo.Devices.Base.Interfaces
     {
         void Add(ISimulatedEvent simulatedEvent);
 
+        void Start(int index);
+
         void StartAll();
+
+        void Stop(int index); 
 
         void StopAll();
 

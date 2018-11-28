@@ -32,15 +32,16 @@ namespace TransportationDemoTests
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
 
-            TestContext.WriteLine(">>Testing the Kiosk Device's base functionality..");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing the Kiosk Device's base functionality..");
 
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
-            // Make sure the device has one simulated event
-            Assert.AreEqual(fakeScheduler.EventList.Count, 1);
+            // should only have 1 scheduled event
+            Assert.AreEqual(fakeScheduler.EventList.Count, 1, "Incorrect number of scheduled events");
 
-            // make sure the device has one direct callback method
-            Assert.AreEqual(fakeDeviceClient.directMethods.Count, 1);
+            // should only have 1 callback method
+            Assert.AreEqual(fakeDeviceClient.directMethods.Count, 1, "Incorrect number of callback methods");
         }
 
         [Test]
@@ -54,7 +55,7 @@ namespace TransportationDemoTests
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
             // execute a purchase ticket event and check the result, it should always be false
-            Assert.IsFalse(fakeScheduler.EventList[0]());
+            Assert.IsFalse(fakeScheduler.EventList[0].EventDelegate());
             // that delegate should have sent one message to the cloud
             Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 1);
 
