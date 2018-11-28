@@ -12,6 +12,7 @@ namespace TransportationDemoTests
     {
         private Queue<Message> messages = new Queue<Message>();
         public List<string> sendMessageLog = new List<string>();
+        public Dictionary<string, object> twinProperties = new Dictionary<string, object>();
         public List<MethodCallback> directMethods = new List<MethodCallback>();
 
 
@@ -49,6 +50,34 @@ namespace TransportationDemoTests
                 sendMessageLog.Add(msg);
             }
             return Task.Factory.StartNew(() => { });
+        }
+
+        public Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
+        {
+            if (twinProperties.ContainsKey(property.Key))
+            {
+                twinProperties[property.Key] = property.Value;
+            }
+            else
+            {
+                twinProperties.Add(property.Key, property.Value);
+            }
+
+            return Task.Factory.StartNew(() => { });
+        }
+
+        public Task<string> GetDigitalTwinAsync()
+        {
+            //TODO: implement method
+
+            return Task<string>.Factory.StartNew(() => string.Empty);
+        }
+
+        public Task<dynamic> GetDynamicDigitalTwinAsync()
+        {
+            //TODO: implement method
+
+            return Task<dynamic>.Factory.StartNew(() => new System.Dynamic.ExpandoObject());
         }
     }
 }

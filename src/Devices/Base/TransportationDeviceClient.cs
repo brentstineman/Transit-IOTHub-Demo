@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Transportation.Demo.Shared;
 using Transportation.Demo.Base.Interfaces;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -41,6 +43,25 @@ namespace Transportation.Demo.Devices.Base
         public async Task RegisterDirectMethodAsync(MethodCallback methodHandler)
         {
             await deviceClient.SetMethodHandlerAsync(methodHandler.Method.Name, methodHandler, null);
+        }
+
+        public async Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
+        {
+            var reportedProperty = new TwinCollection();
+            reportedProperty[property.Key] = property.Value;
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
+        }
+        public async Task<string> GetDigitalTwinAsync()
+        {
+            var twin = await deviceClient.GetTwinAsync();
+            var json = JsonConvert.SerializeObject(twin, Formatting.Indented);
+            return json;
+        }
+        public async Task<dynamic> GetDynamicDigitalTwinAsync()
+        {
+            var twin = await deviceClient.GetTwinAsync();
+            var dyn = twin.ToExpandoObject();
+            return dyn;
         }
     }
 }
