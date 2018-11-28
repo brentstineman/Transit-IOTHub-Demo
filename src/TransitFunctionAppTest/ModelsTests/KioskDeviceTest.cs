@@ -50,7 +50,8 @@ namespace TransportationDemoTests
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
 
-            TestContext.WriteLine("\n>> Testing the purchase ticket simulated event..");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing the purchase ticket simulated event..");
 
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
@@ -85,7 +86,8 @@ namespace TransportationDemoTests
             //
             /// test the CloudToEvent PurchaseResponse call we expect back
             //
-            TestContext.WriteLine("\n>> Testing the ticket approval direct method..");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing the ticket approval direct method..");
 
             // test the direct method itself
             PurchaseTicketPayload approvePurchaseMethodkRequest = new PurchaseTicketPayload()
@@ -122,7 +124,8 @@ namespace TransportationDemoTests
             // create our test device
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
-            TestContext.WriteLine("/n>> Purchasing tickets, shouldn't throw event");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Purchasing tickets, shouldn't throw event");
             string requestString = JsonConvert.SerializeObject(approvePurchaseMethodkRequest);
             MethodRequest methodRequest = new MethodRequest("ReceivePurchaseTicketResponse", Encoding.UTF8.GetBytes(requestString));
 
@@ -153,7 +156,8 @@ namespace TransportationDemoTests
             // create our test device
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
-            TestContext.WriteLine("/n>> Purchasing tickets, shouldn't throw event");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Purchasing tickets, shouldn't throw event");
             string requestString = JsonConvert.SerializeObject(approvePurchaseMethodkRequest);
             MethodRequest methodRequest = new MethodRequest("ReceivePurchaseTicketResponse", Encoding.UTF8.GetBytes(requestString));
 
@@ -167,7 +171,8 @@ namespace TransportationDemoTests
             // now that we're at the threshold, lets clear all previous events
             fakeDeviceClient.sendMessageLog.Clear(); // clear out all messages to this point
 
-            TestContext.WriteLine("/n>> Purchasing 1 more ticket. Should send low stock notification");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Purchasing 1 more ticket. Should send low stock notification");
             // purchase one more ticket. 
             MethodResponse methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
             // we expect 2 messages to have been sent
@@ -189,7 +194,8 @@ namespace TransportationDemoTests
             Assert.AreEqual(actualRequest.MessageType, expectedRequest.MessageType);
             Assert.AreEqual(actualRequest.StockLevel, expectedRequest.StockLevel);
 
-            TestContext.WriteLine("/n>> Testing to make sure we don't have a second low stock warning ..");
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing to make sure we don't have a second low stock warning ..");
             // make sure we don't throw the low stock warning again
             fakeDeviceClient.sendMessageLog.Clear(); // clear out all messages to this point
             // purchase one more ticket. 
