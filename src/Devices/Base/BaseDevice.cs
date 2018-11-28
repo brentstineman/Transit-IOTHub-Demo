@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using Transportation.Demo.Base.Interfaces;
@@ -20,10 +21,9 @@ namespace Transportation.Demo.Devices.Base
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
-            if (deviceConfig == null || client == null || eventScheduler == null)
-            {
-                throw new ArgumentException("one or more of the parameters passed to this method were null. All values must be present");
-            }
+            Contract.Requires<ArgumentNullException>(deviceConfig != null, "deviceConfig parameter cannot be null.");
+            Contract.Requires<ArgumentNullException>(client != null, "client parameter cannot be null.");
+            Contract.Requires<ArgumentNullException>(eventScheduler != null, "eventScheduler parameter cannot be null.");
 
             this.eventScheduler = eventScheduler;
             this.deviceClient = client;  // Connect to the IoT hub using the MQTT protocol
