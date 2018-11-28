@@ -20,6 +20,11 @@ namespace Transportation.Demo.Devices.Base
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
+            if (deviceConfig == null || client == null || eventScheduler == null)
+            {
+                throw new ArgumentException("one or more of the parameters passed to this method were null. All values must be present");
+            }
+
             this.eventScheduler = eventScheduler;
             this.deviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
