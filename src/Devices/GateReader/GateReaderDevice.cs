@@ -12,9 +12,11 @@ using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.GateReader
 {
-    class GateReaderDevice : BaseDevice
+    public class GateReaderDevice : BaseDevice
     {
         enum GateDirection { In, Out };
+
+        private GateDirection CurrentDirection = GateDirection.In;
 
         public GateReaderDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) 
             : base(deviceConfig, client, eventScheduler)
@@ -65,7 +67,7 @@ namespace Transportation.Demo.Devices.GateReader
 
             if (validationResponse.IsApproved)
             {
-                //SendTicketIssuedMessageToCloud(purchaseResponse);
+                SendGateOpenedMessageToCloud(validationResponse);
             }
 
             // Acknowlege the direct method call with a 200 success message
