@@ -128,7 +128,7 @@ namespace TransportationDemoTests
             
             MethodResponse myresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
 
-            // no ticket was issued
+            // no ticket was issued, count remained the same and no message sent to cloud
             Assert.AreEqual(device.CurrentStockLevel, deviceconfig.InitialStockCount);
             Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 0);
         }

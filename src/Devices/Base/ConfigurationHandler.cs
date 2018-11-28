@@ -29,8 +29,22 @@ namespace Transportation.Demo.Devices.Base
 
         public static string GetDeviceRuntimeSettings(string configurationSetting)
         {
-            // TODO: put some error handling around the file access 
-            return System.IO.File.ReadAllText(ConfigurationHandler.getConfig("AppSettings", configurationSetting));
+            string configFile = ConfigurationHandler.getConfig("AppSettings", configurationSetting);
+            string configFileContents = string.Empty;
+
+            // if we have a config file setting and its not empty
+            if (configFile != null && configFile.Length > 0)
+            {
+                if (File.Exists(configFile)) // if the file exists
+                    configFileContents = System.IO.File.ReadAllText(configFile);
+            }
+
+            if (String.IsNullOrEmpty(configFileContents))
+            {
+                throw new ArgumentException("Invalid device configuration file. File is either missing or empty");
+            }
+
+            return configFileContents;
         }
     }
 

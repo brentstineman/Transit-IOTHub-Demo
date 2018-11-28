@@ -9,7 +9,6 @@ namespace Transportation.Demo.Devices.Base
         private Timer eventTimer;
         private double interval;
         private double jitter; 
-        // return true is ready to continue, otherwise return false
         private long eventCount = 0;
 
         private eventDelegate timerDelegate;
