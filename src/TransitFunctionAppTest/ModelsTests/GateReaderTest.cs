@@ -12,15 +12,17 @@ namespace TransportationDemoTests
     [TestFixture]
     class GateReaderTest
     {
-        private BaseDeviceConfig deviceconfig;
+        private GateReaderDeviceConfig deviceconfig;
 
         // test initialization
         public GateReaderTest()
         {
-            deviceconfig = new BaseDeviceConfig()
+            deviceconfig = new GateReaderDeviceConfig()
             {
                 DeviceId = "myFakeDevice",
-                DeviceType = "GateReader"
+                DeviceType = "GateReader",
+                initialDirection = "In",
+                PercentOfWrongWay = 0
             };
 
         }
