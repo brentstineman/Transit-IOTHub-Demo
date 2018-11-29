@@ -37,10 +37,10 @@ namespace TransportationDemoTests
             GateReaderDevice device = new GateReaderDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
             // should only have 1 scheduled event
-            Assert.AreEqual(fakeScheduler.EventList.Count, 1, "Incorrect number of scheduled events");
+            Assert.AreEqual(1, fakeScheduler.EventList.Count, "Incorrect number of scheduled events");
 
             // should only have 1 callback method
-            Assert.AreEqual(fakeDeviceClient.directMethods.Count, 1, "Incorrect number of callback methods");
+            Assert.AreEqual(1, fakeDeviceClient.directMethods.Count, "Incorrect number of callback methods");
         }
 
         [Test]

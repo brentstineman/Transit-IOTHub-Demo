@@ -24,10 +24,10 @@ namespace Transportation.Demo.Devices.GateReader
             TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(2500, 1000, this.ValidateTicketEvent);
 
             // set up any simulated events for this device
-            this.eventScheduler.Add(simulatedEvent);
+            this._EventScheduler.Add(simulatedEvent);
 
             // register any direct methods we're to recieve
-            this.deviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
+            this._DeviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
 
             // set initial direction
             this.Direction = GateDirection.In;
@@ -39,7 +39,7 @@ namespace Transportation.Demo.Devices.GateReader
             set
             {
                 // set device twin property
-                this.deviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
+                this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
                 // set local cached value
                 this.CurrentDirection = value;
             }       
@@ -109,7 +109,7 @@ namespace Transportation.Demo.Devices.GateReader
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart the purchase ticket event
-            this.eventScheduler.Start(0);
+            this._EventScheduler.Start(0);
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }

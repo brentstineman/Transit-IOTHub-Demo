@@ -25,10 +25,10 @@ namespace Transportation.Demo.Devices.Kiosk
             this.TicketStockCount = deviceConfig.InitialStockCount; 
 
             // set up any simulated events for this device
-            this.eventScheduler.Add(new TimedSimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloud));
+            this._EventScheduler.Add(new TimedSimulatedEvent(5000, 2500, this.SendPurchaseTicketMessageToCloud));
 
             // register any direct methods we're to recieve
-            this.deviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
+            this._DeviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
         }
 
         public long CurrentStockLevel
@@ -81,7 +81,7 @@ namespace Transportation.Demo.Devices.Kiosk
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart the purchase ticket event
-            this.eventScheduler.Start(0);
+            this._EventScheduler.Start(0);
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }
