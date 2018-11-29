@@ -10,6 +10,22 @@ using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
 
+
+/// <summary>
+/// 
+/// This class is a simulation of a gate/reader device. Its job would be to scan/read the tickets 
+/// or transit cards of riders and then allow them on or off the platform. The gate can be configured 
+/// to let folks either on off off the platform to help control the flow of traffic. 
+/// 
+/// The ticket/card swipes are triggered by a timer. If the swipe is in the direction that the gate is 
+/// current configured, the device will send a message to the cloud asking for the ticket to be validated. 
+/// The device then waits for a response to this request before the timer restarts and a new event can be triggered. 
+/// 
+/// Once a response is received back from the cloud (via the 'ReceiveTicketValidationResponse' method), its result
+/// is checked and if approved, the gate is opened. In both cases, the timer is restarted so another swipe event can
+/// be triggered.
+/// 
+/// </summary>
 namespace Transportation.Demo.Devices.GateReader
 {
     public class GateReaderDevice : BaseDevice
@@ -22,10 +38,11 @@ namespace Transportation.Demo.Devices.GateReader
         public GateReaderDevice(GateReaderDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) 
             : base(deviceConfig, client, eventScheduler)
         {
-            // set up initial configuration
+            // save device configuration
             this.deviceConfig = deviceConfig;
 
-            this.Direction = (GateDirection)Enum.Parse(typeof(GateDirection), deviceConfig.initialDirection);
+            // set initial direction
+            this.SetDirectionAsync((GateDirection)Enum.Parse(typeof(GateDirection), deviceConfig.initialDirection)).Wait();
 
             TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(2500, 1000, this.SimulatedTicketSwipeOccured);
 
@@ -35,27 +52,36 @@ namespace Transportation.Demo.Devices.GateReader
             // register any direct methods we're to recieve
             this._DeviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
 
-            // set initial direction
-            this.Direction = GateDirection.In;
         }
 
         public GateDirection Direction
         {
             get { return this.CurrentDirection;  }
-            set
-            {
-                // set device twin property
-                this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
-                // set local cached value
-                this.CurrentDirection = value;
-            }       
         }
 
         /// <summary>
-        /// This event is called by a timer to simulate a card being scanned. It checks the direction of the gate (in/out)
-        /// And if the swipe is in the right direction will ask the "cloud" to validate the card and wait for that result.
+        /// This method updates the direction of the Gate Reader to either In or Out
+        /// This updates not only the internal state of the device, but also its IOT Hub Device Twin
         /// </summary>
-        private bool SimulatedTicketSwipeOccured()
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public async Task SetDirectionAsync(GateDirection value)
+        {
+            // set device twin property
+            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
+
+            // set local cached value. Done after the device twin update so if it failed, we didn't update our local value
+            this.CurrentDirection = value;
+
+            return;
+        }
+
+
+    /// <summary>
+    /// This event is called by a timer to simulate a card/ticket being scanned. It checks the direction of the gate (in/out)
+    /// And if the swipe is in the right direction will ask the "cloud" to validate the card and wait for that result.
+    /// </summary>
+    private bool SimulatedTicketSwipeOccured()
         {
             GateDirection randomDirection = this.Direction; // default to the 'right' direction
 
