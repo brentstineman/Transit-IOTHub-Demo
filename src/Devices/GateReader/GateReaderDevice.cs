@@ -14,43 +14,78 @@ namespace Transportation.Demo.Devices.GateReader
 {
     public class GateReaderDevice : BaseDevice
     {
-        enum GateDirection { In, Out };
+        public enum GateDirection { In, Out };
 
-        private GateDirection CurrentDirection = GateDirection.In;
+        private GateDirection CurrentDirection;
 
         public GateReaderDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) 
             : base(deviceConfig, client, eventScheduler)
         {
-            TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(5000, 2500, this.ValidateTicketEvent);
+            TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(2500, 1000, this.ValidateTicketEvent);
 
             // set up any simulated events for this device
             this.eventScheduler.Add(simulatedEvent);
 
             // register any direct methods we're to recieve
             this.deviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
+
+            // set initial direction
+            this.Direction = GateDirection.In;
+        }
+
+        public GateDirection Direction
+        {
+            get { return this.CurrentDirection;  }
+            set
+            {
+                // set device twin property
+                this.deviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
+                // set local cached value
+                this.CurrentDirection = value;
+            }       
         }
 
         private bool ValidateTicketEvent()
         {
-            //todo: gate direction
+            GateDirection randomDirection = this.Direction; // default to the 'right' direction
 
-            ValidateTicketRequest cloudRequest = new ValidateTicketRequest()
+            // calculate if scan was from 'right' direction
+            Random gen = new Random();
+            if (gen.Next(100) > (100-50)) // if from 'wrong' direction
             {
-                DeviceId = this.deviceId,
-                DeviceType = this.deviceType,
-                MessageType = "ValdiateTicket",
-                TransactionId = Guid.NewGuid().ToString(),
-                CreateTime = System.DateTime.UtcNow,
-                MethodName = "ReceiveTicketValidationResponse" // must match callback method
-            };
+                // get other direction
+                randomDirection = (this.Direction == GateDirection.In ? GateDirection.Out : GateDirection.In);
+            }
 
-            var messageString = JsonConvert.SerializeObject(cloudRequest);
-            SendMessageToCloud(messageString);
+            bool needtovalidate = randomDirection == this.Direction; // don't restart timer
 
-            Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
-            Console.WriteLine();
+            if (needtovalidate)
+            {
+                ValidateTicketRequest cloudRequest = new ValidateTicketRequest()
+                {
+                    DeviceId = this.deviceId,
+                    DeviceType = this.deviceType,
+                    MessageType = "ValdiateTicket",
+                    TransactionId = Guid.NewGuid().ToString(),
+                    CreateTime = System.DateTime.UtcNow,
+                    MethodName = "ReceiveTicketValidationResponse" // must match callback method
+                };
 
-            return false; // don't restart timer
+                var messageString = JsonConvert.SerializeObject(cloudRequest);
+                SendMessageToCloud(messageString);
+
+                Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Wrong Direction Scan");
+                Console.WriteLine();
+
+            }
+
+            return needtovalidate;
+
         }
 
         private Task<MethodResponse> ReceiveTicketValidationResponse(MethodRequest methodRequest, object userContext)

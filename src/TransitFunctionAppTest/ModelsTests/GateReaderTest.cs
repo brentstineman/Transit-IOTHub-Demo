@@ -26,7 +26,7 @@ namespace TransportationDemoTests
         }
 
         [Test]
-        public void TestBaseKioskDevice()
+        public void TestBaseGateReaderDevice()
         {
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
