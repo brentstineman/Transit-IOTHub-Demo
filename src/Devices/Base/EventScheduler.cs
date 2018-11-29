@@ -7,24 +7,16 @@ namespace Transportation.Demo.Devices.Base
 {
     public class EventScheduler : IEventScheduler
     {
-        private List<ISimulatedEvent> _EventList = new List<ISimulatedEvent>();
+        public List<ISimulatedEvent> EventList = new List<ISimulatedEvent>();
 
         public EventScheduler()
         {
 
         }
 
-        public List<ISimulatedEvent> EventList
-        {
-            get
-            {
-                return _EventList;
-            }
-        }
-
         public void Add(ISimulatedEvent simulatedEvent)
         {
-            _EventList.Add(simulatedEvent);
+            EventList.Add(simulatedEvent);
         }
 
         public void Start(int index)
