@@ -50,6 +50,7 @@ namespace TransportationDemoTests
         {
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+            deviceconfig.PercentOfWrongWay = 0; // make sure we don't have any wrong way swipes
 
             TestContext.WriteLine(string.Empty);
             TestContext.WriteLine(">> Testing the purchase ticket simulated event..");
@@ -59,7 +60,7 @@ namespace TransportationDemoTests
             // execute a validate ticket event and check the result, it should always be false
             Assert.IsFalse(fakeScheduler.EventList[0].EventDelegate());
             // that delegate should have sent one message to the cloud
-            Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 1);
+            Assert.AreEqual(1, fakeDeviceClient.sendMessageLog.Count);
 
             // check the message sent to make sure its correct
             // create a sample request for comparison
@@ -75,10 +76,10 @@ namespace TransportationDemoTests
             // get request message into an object so we can compare it
             ValidateTicketRequest actualRequest = JsonConvert.DeserializeObject<ValidateTicketRequest>(fakeDeviceClient.sendMessageLog[0]);
             // compare properties to make sure they're valid. 
-            Assert.AreEqual(actualRequest.DeviceId, expectedRequest.DeviceId);
-            Assert.AreEqual(actualRequest.DeviceType, expectedRequest.DeviceType);
-            Assert.AreEqual(actualRequest.MessageType, expectedRequest.MessageType);
-            Assert.AreEqual(actualRequest.MethodName, expectedRequest.MethodName);
+            Assert.AreEqual(expectedRequest.DeviceId, actualRequest.DeviceId);
+            Assert.AreEqual(expectedRequest.DeviceType, actualRequest.DeviceType);
+            Assert.AreEqual(expectedRequest.MessageType, actualRequest.MessageType);
+            Assert.AreEqual(expectedRequest.MethodName, actualRequest.MethodName);
 
             //
             /// test the CloudToEvent PurchaseResponse call we expect back
@@ -99,7 +100,7 @@ namespace TransportationDemoTests
             MethodRequest methodRequest = new MethodRequest(expectedRequest.MethodName, Encoding.UTF8.GetBytes(requestString));
             MethodResponse methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
             // check results
-            Assert.AreEqual(methodresult.Status, 200); // got back an ok
+            Assert.AreEqual(200, methodresult.Status); // got back an ok
         }
 
         [Test]
@@ -121,16 +122,34 @@ namespace TransportationDemoTests
             // create our test device
             GateReaderDevice device = new GateReaderDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
 
+            // send a ticket NOT approved event to the callback method
             TestContext.WriteLine(string.Empty);
             TestContext.WriteLine(">> validating ticket, shouldn't throw event");
             string requestString = JsonConvert.SerializeObject(approvePurchaseMethodkRequest);
             MethodRequest methodRequest = new MethodRequest("ReceivePurchaseTicketResponse", Encoding.UTF8.GetBytes(requestString));
-
             
             MethodResponse myresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
 
-            // no ticket was issued, no message sent to cloud
-            Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 0);
+            // ticket validation failed, so no "gate opened" message sent
+            Assert.AreEqual(0, fakeDeviceClient.sendMessageLog.Count);
+        }
+
+        [Test]
+        public void TestWrongWaySwipe()
+        {
+            TestContext.WriteLine(">> Testing the Device's wrong way swipe..");
+
+            FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
+            FakeEventScheduler fakeScheduler = new FakeEventScheduler();
+            deviceconfig.PercentOfWrongWay = 100; // gurantee a wrong way swipe
+
+            // create our test device
+            GateReaderDevice device = new GateReaderDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
+
+            // check the ticket, should return false so we can restart the timer
+            Assert.IsTrue(fakeScheduler.EventList[0].EventDelegate());
+            // that delegate should have sent NO messages to the cloud
+            Assert.AreEqual(0, fakeDeviceClient.sendMessageLog.Count);
         }
 
     }
