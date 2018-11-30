@@ -11,6 +11,7 @@ using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Base
 {
+    public enum DeviceStatus { enabled, disabled };
     public class BaseDevice
     {
         protected IEventScheduler _EventScheduler;
@@ -18,6 +19,7 @@ namespace Transportation.Demo.Devices.Base
 
         protected string deviceId;
         protected string deviceType;
+        protected DeviceStatus status;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -31,7 +33,8 @@ namespace Transportation.Demo.Devices.Base
 
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
-
+            // When the device first registers, it should default to a "disabled" state
+            this.status = DeviceStatus.disabled;
             // ?? validate device ID on instantiation ?? 
         }
 
@@ -64,5 +67,14 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
+        public void EnableDevice()
+        {
+            this.status = DeviceStatus.enabled;
+        }
+        public void DisableDevice()
+        {
+            this.status = DeviceStatus.disabled;
+            StopAllEvents();
+        }
     }
 }
