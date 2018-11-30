@@ -4,15 +4,12 @@ using System.Text;
 
 namespace Transportation.Demo.Shared.Models
 {
-    public class LowStockRequest : IBaseDeviceEvent
+    public class ValidateTicketResponse
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
         public string MessageType { get; set; }
         public string TransactionId { get; set; }
-        public DateTime CreateTime { get; set; }
-        public string MethodName { get; set; }
-        public long StockLevel { get; set; }
-
+        public bool IsApproved { get; set; }
     }
 }

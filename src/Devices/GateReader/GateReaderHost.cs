@@ -19,7 +19,7 @@ namespace Transportation.Demo.Devices.GateReader
             EventScheduler myScheduler = new EventScheduler();
 
             // get device configuration details from JSON file
-            BaseDeviceConfig deviceConfig = JsonConvert.DeserializeObject<BaseDeviceConfig>(ConfigurationHandler.GetDeviceRuntimeSettings("deviceConfig"));
+            GateReaderDeviceConfig deviceConfig = JsonConvert.DeserializeObject<GateReaderDeviceConfig>(ConfigurationHandler.GetDeviceRuntimeSettings("deviceConfig"));
             // create our simulated device
             myGateReader = new GateReaderDevice(deviceConfig, myClient, myScheduler);
 

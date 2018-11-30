@@ -13,8 +13,8 @@ namespace Transportation.Demo.Devices.Base
 {
     public class BaseDevice
     {
-        protected IEventScheduler eventScheduler;
-        protected IDeviceClient deviceClient;
+        protected IEventScheduler _EventScheduler;
+        protected IDeviceClient _DeviceClient;
 
         protected string deviceId;
         protected string deviceType;
@@ -26,8 +26,8 @@ namespace Transportation.Demo.Devices.Base
                 throw new ArgumentNullException("one or more parameters are null. All parameters must be provided");
             }
 
-            this.eventScheduler = eventScheduler;
-            this.deviceClient = client;  // Connect to the IoT hub using the MQTT protocol
+            this._EventScheduler = eventScheduler;
+            this._DeviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
@@ -37,12 +37,12 @@ namespace Transportation.Demo.Devices.Base
 
         public void StartAllEvents()
         {
-            eventScheduler.StartAll(); 
+            _EventScheduler.StartAll(); 
         }
 
         public void StopAllEvents()
         {
-            eventScheduler.StopAll();
+            _EventScheduler.StopAll();
         }
 
         public void SendMessageToCloud (string messageString)
@@ -60,7 +60,7 @@ namespace Transportation.Demo.Devices.Base
             messageProperties.Add("deviceId", this.deviceId);
 
             // Send the telemetry message
-            this.deviceClient.SendMessageAsync(messageString).Wait();
+            this._DeviceClient.SendMessageAsync(messageString).Wait();
 
         }
 

@@ -2,7 +2,7 @@
 
 namespace Transportation.Demo.Shared.Models
 {
-    public interface ITicketRequest
+    public interface IBaseDeviceEvent
     {
         DateTime CreateTime { get; set; }
         string DeviceId { get; set; }

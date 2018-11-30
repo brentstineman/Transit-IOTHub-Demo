@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Transportation.Demo.Devices.Base;
-using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
+using TransportationDemoTests;
 
-namespace TransportationDemoTests.ModelsTests
+namespace TransitFunctionAppTest
 {
     [TestFixture]
     class BaseDeviceTest

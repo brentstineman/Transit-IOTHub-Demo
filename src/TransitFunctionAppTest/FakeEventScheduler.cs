@@ -1,45 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 
 namespace TransportationDemoTests
 {
-    public class FakeEventScheduler : IEventScheduler
+    /// <summary>
+    /// This class is used by the unit tests. It disables the "timer" functionality so 
+    /// we can test the various timer delegates directly. Thus allowing unit tests to not 
+    /// be dependent on that functionality.
+    /// </summary>
+    public class FakeEventScheduler : EventScheduler
     {
-        public List<FakeTimedSimulatedEvent> EventList = new List<FakeTimedSimulatedEvent>();
-
-        public void Add(ISimulatedEvent simulatedEvent)
+        /// <summary>
+        /// This overridding Add method replaces the "real" event with a fake one.
+        /// The fake event doesn't have the timer so we can manually execute the 
+        /// events to allow for testing of them without having to expose the timer
+        /// methods publically and violating OO principles.
+        /// </summary>
+        /// <param name="simulatedEvent"></param>
+        public override void Add(ISimulatedEvent simulatedEvent)
         {
-            // map inbound event to FakeEvent
-            this.EventList.Add(new FakeTimedSimulatedEvent(simulatedEvent));
-        }
-
-        public void Start(int index)
-        {
-            EventList[index].Start();
-        }
-
-        public void StartAll()
-        {
-            foreach (var myevent in EventList)
-            {
-                myevent.Start();
-            }
-        }
-
-        public void Stop(int index)
-        {
-            EventList[index].Stop();
-        }
-
-        public void StopAll()
-        {
-            foreach (var myevent in EventList)
-            {
-                myevent.Stop();
-            }
+            // map inbound event to FakeEvent and add to the collection
+            EventList.Add(new FakeTimedSimulatedEvent(simulatedEvent));
         }
     }
 }
