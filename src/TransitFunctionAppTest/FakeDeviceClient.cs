@@ -34,13 +34,14 @@ namespace TransportationDemoTests
         {
             directMethods.Add(methodHandler);
 
-            return Task.Factory.StartNew(() => { });
+            return Task.CompletedTask;
         }
 
         public Task SendMessageAsync(string msg)
         {
             sendMessageLog.Add(msg);
-            return Task.Factory.StartNew(()=> { });
+
+            return Task.CompletedTask;
         }
 
         public Task SendMessageBatchAsync(IEnumerable<string> msgs)
@@ -49,7 +50,8 @@ namespace TransportationDemoTests
             {
                 sendMessageLog.Add(msg);
             }
-            return Task.Factory.StartNew(() => { });
+
+            return Task.CompletedTask;
         }
 
         public Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
@@ -63,7 +65,7 @@ namespace TransportationDemoTests
                 twinProperties.Add(property.Key, property.Value);
             }
 
-            return Task.Factory.StartNew(() => { });
+            return Task.CompletedTask;
         }
 
         public Task<string> GetDigitalTwinAsync()
