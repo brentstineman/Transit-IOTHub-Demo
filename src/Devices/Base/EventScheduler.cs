@@ -14,7 +14,7 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
-        public void Add(ISimulatedEvent simulatedEvent)
+        public virtual void Add(ISimulatedEvent simulatedEvent)
         {
             EventList.Add(simulatedEvent);
         }
