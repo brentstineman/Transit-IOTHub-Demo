@@ -104,7 +104,7 @@ namespace TransportationDemoTests
         }
 
         [Test]
-        public void TestValidationFailed()
+        public void TestInvalidTicketResponse()
         {
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Transportation.Demo.Shared.Models
 {
-    public class LowStockRequest : ITicketRequest
+    public class LowStockRequest : IBaseDeviceEvent
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }

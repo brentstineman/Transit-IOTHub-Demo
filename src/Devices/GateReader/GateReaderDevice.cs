@@ -161,7 +161,7 @@ namespace Transportation.Demo.Devices.GateReader
         /// </summary>
         private bool SendGateOpenedMessageToCloud(ValidateTicketResponse responsePayload)
         {
-            GateOpenedRequest issueTicketRequest = new GateOpenedRequest()
+            GateOpenedNotification issueTicketRequest = new GateOpenedNotification()
             {
                 DeviceId = this.deviceId,
                 DeviceType = this.deviceType,
