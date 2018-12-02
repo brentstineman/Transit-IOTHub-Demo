@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Base
 {
+    public enum DeviceStatus { enabled, disabled };
     public class BaseDevice
     {
         protected IEventScheduler _EventScheduler;
@@ -18,6 +20,7 @@ namespace Transportation.Demo.Devices.Base
 
         protected string deviceId;
         protected string deviceType;
+        protected DeviceStatus status;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -31,7 +34,8 @@ namespace Transportation.Demo.Devices.Base
 
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
-
+            // When the device first registers, it should default to a "disabled" state
+            this.status = DeviceStatus.disabled;
             // ?? validate device ID on instantiation ?? 
         }
 
@@ -64,5 +68,18 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
+        public async Task EnableDevice()
+        {
+            this.status = DeviceStatus.enabled;
+            //Call the helper method to update the status property
+           await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+        }
+        public async Task DisableDevice()
+        {
+            this.status = DeviceStatus.disabled;
+            StopAllEvents();
+            //Call the helper method to update the status property
+            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+        }
     }
 }
