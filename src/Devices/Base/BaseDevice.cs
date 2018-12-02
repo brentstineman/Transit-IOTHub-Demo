@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
@@ -67,14 +68,18 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
-        public void EnableDevice()
+        public async Task EnableDevice()
         {
             this.status = DeviceStatus.enabled;
+            //Call the helper method to update the status property
+           await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
         }
-        public void DisableDevice()
+        public async Task DisableDevice()
         {
             this.status = DeviceStatus.disabled;
             StopAllEvents();
+            //Call the helper method to update the status property
+            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
         }
     }
 }

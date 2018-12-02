@@ -7,6 +7,10 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Microsoft.Azure.Devices.Client;
+using System.Collections.Generic;
+using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Functions
 {
@@ -14,20 +18,20 @@ namespace Transportation.Demo.Functions
     {
         [FunctionName("SetDeviceStatus")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous,"post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SetDeviceStatus/{DeviceId:guid}/{status}")] HttpRequest req,
+            string deviceId,
+            string status,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string name = req.Query["name"];
-
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-
-            return name != null
-                ? (ActionResult)new OkObjectResult($"Hello, {name}")
-                : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
+            DeviceStatus newStatus;
+            if (!Enum.TryParse(status, out newStatus)) {
+                return new BadRequestResult();
+            }
+            DeviceClient client = DeviceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"), deviceId);
+            var properyUpdate = new TwinCollection();
+            properyUpdate["status"] = newStatus;
+            await client.UpdateReportedPropertiesAsync(properyUpdate);
+            return new OkResult();
         }
     }
 }
