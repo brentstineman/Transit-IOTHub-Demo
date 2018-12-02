@@ -24,14 +24,25 @@ namespace Transportation.Demo.Functions
             StringBuilder deviceQuery = new StringBuilder("select * from devices where status='enabled'");
 
             if (req.Query.ContainsKey("id")) {
+                Guid tempId;
+                if (!Guid.TryParse(req.Query["id"], out tempId))
+                {
+                    return new BadRequestResult();
+                }
                 deviceQuery.Append($" and deviceId = '{req.Query["id"]}'");
+                
             }
-
+            // TODO: validate device type. For type, we have a list of allowed device types we can check
             if (req.Query.ContainsKey("type")) {
                 deviceQuery.Append($" and deviceType = '{req.Query["type"]}'");
             }
             if (req.Query.ContainsKey("location"))
             {
+                // Check for SQL injection --disallow the location from ending its SQL string
+                if (((string)req.Query["location"]).Contains("'"))
+                {
+                    return new BadRequestResult();
+                }
                 deviceQuery.Append($"and tags.location = '{req.Query["location"]}'");
             }
 
@@ -39,7 +50,7 @@ namespace Transportation.Demo.Functions
 
             var devices = await query.GetNextAsTwinAsync();
 
-            return (ActionResult)new OkObjectResult(JsonConvert.SerializeObject(devices));
+            return new OkObjectResult(JsonConvert.SerializeObject(devices));
         }
     }
 }
