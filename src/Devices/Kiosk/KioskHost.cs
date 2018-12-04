@@ -31,6 +31,7 @@ namespace Transportation.Demo.Devices.Kiosk
             // create our simulated device
             myKiosk = new KioskDevice(deviceConfig, myClient, myScheduler);
 
+
             // start the device running
             myKiosk.StartAllEvents();
 

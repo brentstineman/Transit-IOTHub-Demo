@@ -4,12 +4,14 @@ using System.Text;
 
 namespace Transportation.Demo.Shared.Models
 {
-    public class ValidateTicketResponse
+    public enum GateDirection { In, Out };
+
+    public class GateDirectionUpdate
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
-        public string MessageType { get; set; } = Transportation.Demo.Shared.Models.MessageType.cmdValidateTicket;
+        public string MessageType { get; set; } = Transportation.Demo.Shared.Models.MessageType.cmdGateDirectionChange;
         public string TransactionId { get; set; }
-        public bool IsApproved { get; set; }
+        public GateDirection Direction { get; set; }
     }
 }

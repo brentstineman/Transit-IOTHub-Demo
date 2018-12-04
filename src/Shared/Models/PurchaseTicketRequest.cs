@@ -8,7 +8,7 @@ namespace Transportation.Demo.Shared.Models
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
-        public string MessageType { get; set; }
+        public string MessageType { get; set; } = Transportation.Demo.Shared.Models.MessageType.cmdPurchaseTicket;
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
 

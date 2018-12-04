@@ -43,7 +43,6 @@ namespace Transportation.Demo.Devices.Kiosk
             {
                 DeviceId = this.deviceId,
                 DeviceType = this.deviceType,
-                MessageType = "Purchase",
                 TransactionId = Guid.NewGuid().ToString(),
                 CreateTime = System.DateTime.UtcNow,
                 Price = random.Next(2, 100),
@@ -94,7 +93,6 @@ namespace Transportation.Demo.Devices.Kiosk
             {
                 DeviceId = this.deviceId,
                 DeviceType = this.deviceType,
-                MessageType = "TicketIssued",
                 TransactionId = requestpayload.TransactionId,
                 CreateTime = System.DateTime.UtcNow
             };
@@ -120,7 +118,6 @@ namespace Transportation.Demo.Devices.Kiosk
             {
                 DeviceId = this.deviceId,
                 DeviceType = this.deviceType,
-                MessageType = "LowStock",
                 StockLevel = this.TicketStockCount,
                 CreateTime = System.DateTime.UtcNow
             };

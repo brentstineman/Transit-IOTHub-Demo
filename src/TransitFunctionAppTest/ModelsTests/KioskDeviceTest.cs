@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using NUnit.Framework;
 using System.Text;
-using TransitFunctionApp;
 using Transportation.Demo.Devices.Kiosk;
 using Transportation.Demo.Shared.Models;
 
@@ -19,7 +18,7 @@ namespace TransportationDemoTests
             deviceconfig = new KioskDeviceConfig()
             {
                 DeviceId = "myFakeDevice",
-                DeviceType = "Kiosk",
+                DeviceType = DeviceType.TicketKiosk,
                 InitialStockCount = 100,
                 LowStockThreshold = 98
             };
@@ -66,7 +65,7 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "Purchase",
+                MessageType = MessageType.cmdPurchaseTicket,
                 TransactionId = "fakeId",
                 CreateTime = System.DateTime.UtcNow,
                 Price = 1,
@@ -149,7 +148,7 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "Purchase",
+                MessageType = MessageType.cmdPurchaseTicket,
                 IsApproved = true
             };
 
@@ -182,7 +181,7 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "LowStock",
+                MessageType = MessageType.eventLowStock,
                 StockLevel = (deviceconfig.LowStockThreshold-1),
             };
             // get actual message into an object so we can compare it

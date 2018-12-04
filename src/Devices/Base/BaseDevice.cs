@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
 
 namespace Transportation.Demo.Devices.Base
 {
-    public class BaseDevice
+    public class BaseDevice : ISimulatedDevice
     {
         protected IEventScheduler _EventScheduler;
         protected IDeviceClient _DeviceClient;
@@ -31,8 +32,12 @@ namespace Transportation.Demo.Devices.Base
 
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
+        }
 
-            // ?? validate device ID on instantiation ?? 
+        public Task InitializeAsync()
+        {
+            // we don't need to do anything for the base class, so just return
+            return Task.CompletedTask;
         }
 
         public void StartAllEvents()

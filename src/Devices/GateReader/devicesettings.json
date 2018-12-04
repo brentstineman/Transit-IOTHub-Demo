@@ -2,7 +2,7 @@
   "deviceId": "BrentGateReader",
   "deviceType": "GateReader",
   "initialDirection": "In",
-  "percentOfWrongWay": 50,
+  "percentOfWrongWay": 5,
   "events": [
 
   ]

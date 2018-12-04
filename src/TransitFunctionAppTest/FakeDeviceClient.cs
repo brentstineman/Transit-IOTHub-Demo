@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Shared;
 
 namespace TransportationDemoTests
 {
@@ -12,9 +13,22 @@ namespace TransportationDemoTests
     {
         private Queue<Message> messages = new Queue<Message>();
         public List<string> sendMessageLog = new List<string>();
-        public Dictionary<string, object> twinProperties = new Dictionary<string, object>();
+        private Twin fakeTwin;
         public List<MethodCallback> directMethods = new List<MethodCallback>();
 
+        public FakeDeviceClient(Twin deviceTwin = null)
+        {
+
+            if (deviceTwin == null)
+            {
+                fakeTwin = new Microsoft.Azure.Devices.Shared.Twin("fakeDevice");
+            }
+            else
+            {
+                fakeTwin = deviceTwin;
+            }
+
+        }
 
         public void AddFakeMessage(Stream stream)
         {
@@ -56,13 +70,19 @@ namespace TransportationDemoTests
 
         public Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
-            if (twinProperties.ContainsKey(property.Key))
+            // if the property already exists, update it
+            if (fakeTwin.Properties.Reported.Contains(property.Key))
             {
-                twinProperties[property.Key] = property.Value;
+                fakeTwin.Properties.Reported[property.Key] = property.Value;
             }
             else
             {
-                twinProperties.Add(property.Key, property.Value);
+                // get current properties
+                dynamic newReportedProperties = fakeTwin.Properties.Reported.ToExpandoObject();
+                // add in our new one
+                newReportedProperties.TryAdd(property.Key, property.Value);
+                // save the properties back out
+                fakeTwin.Properties.Reported = new TwinCollection(newReportedProperties.ToExpandoObject(), null);
             }
 
             return Task.CompletedTask;
@@ -70,16 +90,49 @@ namespace TransportationDemoTests
 
         public Task<string> GetDigitalTwinAsync()
         {
-            //TODO: implement method
-
-            return Task<string>.Factory.StartNew(() => string.Empty);
+            return Task<string>.Factory.StartNew(() => JsonConvert.SerializeObject(fakeTwin, Formatting.Indented));
         }
 
         public Task<dynamic> GetDynamicDigitalTwinAsync()
         {
-            //TODO: implement method
-
-            return Task<dynamic>.Factory.StartNew(() => new System.Dynamic.ExpandoObject());
+            //{
+            //    "deviceId": "BrentGateReader",
+            //    "etag": "AAAAAAAAAAE=",
+            //    "deviceEtag": "ODEwMDMwNTY1",
+            //    "status": "enabled",
+            //    "statusUpdateTime": "0001-01-01T00:00:00",
+            //    "connectionState": "Connected",
+            //    "lastActivityTime": "2018-12-04T15:50:12.7708574",
+            //    "cloudToDeviceMessageCount": 0,
+            //    "authenticationType": "sas",
+            //    "x509Thumbprint": {
+            //        "primaryThumbprint": null,
+            //        "secondaryThumbprint": null
+            //    },
+            //    "version": 3,
+            //    "properties": {
+            //        "desired": {
+            //            "$metadata": {
+            //                "$lastUpdated": "2018-12-04T15:35:30.8539277Z"
+            //            },
+            //            "$version": 1
+            //        },
+            //        "reported": {
+            //            "GateDirection": "Out",
+            //            "$metadata": {
+            //                "$lastUpdated": "2018-12-04T15:50:49.9838118Z",
+            //                "GateDirection": {
+            //                    "$lastUpdated": "2018-12-04T15:50:49.9838118Z"
+            //                }
+            //            },
+            //            "$version": 2
+            //        }
+            //    },
+            //    "capabilities": {
+            //        "iotEdge": false
+            //    }
+            //}
+            return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
         }
     }
 }
