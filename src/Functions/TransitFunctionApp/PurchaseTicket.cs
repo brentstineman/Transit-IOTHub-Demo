@@ -29,7 +29,7 @@ namespace TransitFunctionApp
             {
                 string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
-                PurchaseTicketAction action = new PurchaseTicketAction(new ServiceClientInvokeDeviceMethod(serviceClient), messagePayload, log);
+                PurchaseTicketAction action = new PurchaseTicketAction(new ServiceClientInvokeDeviceMethod(serviceClient), 5, messagePayload, log);
                 action.Run();
 
             }

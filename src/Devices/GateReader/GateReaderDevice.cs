@@ -187,7 +187,7 @@ namespace Transportation.Demo.Devices.GateReader
         private Task<MethodResponse> ReceiveCommandGateChange(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
-            GateDirectionUpdate directionCommand = JsonConvert.DeserializeObject<GateDirectionUpdate>(data);
+            cmdGateDirectionUpdate directionCommand = JsonConvert.DeserializeObject<cmdGateDirectionUpdate>(data);
 
             var json = JObject.Parse(data);
 

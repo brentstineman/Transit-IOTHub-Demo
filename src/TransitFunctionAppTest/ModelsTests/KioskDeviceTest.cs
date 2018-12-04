@@ -65,7 +65,6 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = MessageType.cmdPurchaseTicket,
                 TransactionId = "fakeId",
                 CreateTime = System.DateTime.UtcNow,
                 Price = 1,
@@ -181,7 +180,6 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = MessageType.eventLowStock,
                 StockLevel = (deviceconfig.LowStockThreshold-1),
             };
             // get actual message into an object so we can compare it

@@ -22,8 +22,7 @@ namespace TransitFunctionAppTest
             ValidateTicketRequest testRequest = new ValidateTicketRequest()
             {
                 DeviceId = "testID",
-                DeviceType = "GateReader",
-                MessageType = "ValdiateTicket",
+                DeviceType = DeviceType.GateReader,
                 TransactionId = "fakeTransactionId",
                 CreateTime = System.DateTime.UtcNow,
                 MethodName = "ReceiveTicketValidationResponse"

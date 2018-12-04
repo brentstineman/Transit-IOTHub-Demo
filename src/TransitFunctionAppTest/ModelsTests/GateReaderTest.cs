@@ -196,10 +196,8 @@ namespace TransportationDemoTests
 
             TestContext.WriteLine(">> Testing the Device's Gate Direction change commands..");
 
-            GateDirectionUpdate commandGateDirectionUpdate = new GateDirectionUpdate()
+            cmdGateDirectionUpdate commandGateDirectionUpdate = new cmdGateDirectionUpdate()
             {
-                DeviceId = deviceconfig.DeviceId,
-                DeviceType = deviceconfig.DeviceType,
                 Direction = GateDirection.In
             };
 

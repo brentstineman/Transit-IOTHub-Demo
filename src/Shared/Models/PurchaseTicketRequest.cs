@@ -6,9 +6,10 @@ namespace Transportation.Demo.Shared.Models
 {
     public class PurchaseTicketRequest : IBaseDeviceEvent
     {
+        public string Version { get; } = "1.0.0";
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
-        public string MessageType { get; set; } = Transportation.Demo.Shared.Models.MessageType.cmdPurchaseTicket;
+        public string MessageType { get; } = Transportation.Demo.Shared.Models.MessageType.cmdPurchaseTicket;
         public string TransactionId { get; set; }
         public DateTime CreateTime { get; set; }
 

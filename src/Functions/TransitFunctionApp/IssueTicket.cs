@@ -40,8 +40,7 @@ namespace Transportation.Demo.Functions
                     {
                         TransactionId = transactionId,
                         DeviceId = ticketRequestMessage.DeviceId,
-                        DeviceType = ticketRequestMessage.DeviceType,
-                        MessageType = ticketRequestMessage.MessageType,
+                        DeviceType = ticketRequestMessage.DeviceType
                     };
 
                     log.LogInformation($"Response Method: {methodName}");
