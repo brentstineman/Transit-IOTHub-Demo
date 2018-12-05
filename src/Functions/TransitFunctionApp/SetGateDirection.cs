@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.Azure.Devices;
 using Transportation.Demo.Shared.Models;
+using TransitFunctionApp;
 
 namespace Transportation.Demo.Functions
 {
@@ -22,45 +23,12 @@ namespace Transportation.Demo.Functions
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "devices/{deviceId}/direction={direction}"),] HttpRequest req, string deviceId, string direction,
             ILogger log)
         {
-            var registryManager = RegistryManager.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));
 
-            // create command message
-            var methodInvocation = new CloudToDeviceMethod("ReceiveCommandGateChange")
-            {
-                ResponseTimeout = TimeSpan.FromSeconds(30)
-            };
-            try
-            {
-                cmdGateDirectionUpdate command = new cmdGateDirectionUpdate()
-                {
-                    Direction = (GateDirection)Enum.Parse(typeof(GateDirection), direction)
-                };
-                methodInvocation.SetPayloadJson(JsonConvert.SerializeObject(command));
-            }
-            catch (System.ArgumentException)
-            {
-                return new BadRequestObjectResult("value of 'direction' must be 'In' or 'Out'");
-            }
+            SetGateDirectionAction action = new SetGateDirectionAction(new ServiceClientInvokeDeviceMethod(serviceClient), log);
+            var result = await action.Run(deviceId, direction);
 
-
-            try
-            {
-                // Invoke the direct method and get the response from the simulated device.
-                var response = await serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
-
-                Console.WriteLine("Response status: {0}, payload:", response.Status);
-                Console.WriteLine(response.GetPayloadAsJson());
-            }
-            catch (Microsoft.Azure.Devices.Common.Exceptions.DeviceNotFoundException ex)
-            {
-                return new BadRequestObjectResult($"Device '{deviceId}' either does not exist or is not responding");
-            }
-
-            return new OkObjectResult($"Device {deviceId} updated to new direction: {direction}");
-            //return name != null
-            //    ? (ActionResult)new OkObjectResult($"Hello, {name}")
-            //    : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
+            return result;
         }
     }
 }
