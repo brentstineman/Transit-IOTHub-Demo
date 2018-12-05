@@ -68,18 +68,19 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
-        public async Task EnableDevice()
+        public async Task SetDeviceStatus(DeviceStatus status)
         {
-            this.status = DeviceStatus.enabled;
-            //Call the helper method to update the status property
-           await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
-        }
-        public async Task DisableDevice()
-        {
-            this.status = DeviceStatus.disabled;
-            StopAllEvents();
+             this.status = status;
             //Call the helper method to update the status property
             await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+            if (status == DeviceStatus.disabled)
+            {
+                StopAllEvents();
+            }
+        }
+        public DeviceStatus GetDeviceStatus()
+        {
+            return this.status;
         }
     }
 }

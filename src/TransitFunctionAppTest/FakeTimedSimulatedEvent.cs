@@ -11,6 +11,8 @@ namespace TransportationDemoTests
         private eventDelegate eventCallback;
         private bool isRunning;
 
+        public FakeTimedSimulatedEvent()
+        { }
         public FakeTimedSimulatedEvent(ISimulatedEvent originalEvent)
         {
             this.eventCallback = originalEvent.EventDelegate;

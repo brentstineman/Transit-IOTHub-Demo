@@ -24,10 +24,15 @@ namespace Transportation.Demo.Functions
             ILogger log)
         {
             DeviceStatus newStatus;
-            if (!Enum.TryParse(status, out newStatus)) {
+            if (!Enum.TryParse(status, out newStatus))
+            {
                 return new BadRequestResult();
             }
             DeviceClient client = DeviceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"), deviceId);
+            if (client == null)
+            {
+                return new BadRequestResult();
+            }
             var properyUpdate = new TwinCollection();
             properyUpdate["status"] = newStatus;
             await client.UpdateReportedPropertiesAsync(properyUpdate);
