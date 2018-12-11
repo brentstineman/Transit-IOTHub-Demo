@@ -8,5 +8,6 @@ namespace Transportation.Demo.Shared.Models
     {
         public string DeviceId { get; set; }
         public string DeviceType { get; set; }
+        public string Status { get; set; }
     }
 }

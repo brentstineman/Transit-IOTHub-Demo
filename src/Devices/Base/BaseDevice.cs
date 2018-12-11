@@ -13,6 +13,7 @@ using Transportation.Demo.Shared.Models;
 namespace Transportation.Demo.Devices.Base
 {
     public enum DeviceStatus { enabled, disabled };
+
     public class BaseDevice
     {
         protected IEventScheduler _EventScheduler;
@@ -35,11 +36,30 @@ namespace Transportation.Demo.Devices.Base
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
             // When the device first registers, it should default to a "disabled" state
-            this.status = DeviceStatus.disabled;
+            InitializeStatus(deviceConfig);
             // ?? validate device ID on instantiation ?? 
         }
 
-        public void StartAllEvents()
+        public new void InitializeStatus(IDeviceConfig deviceConfig)
+        {
+            // set initial status. Use configuration value as default
+            string intialStatus = deviceConfig.Status;
+
+            // get twin 
+            var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
+
+            if (myTwin.Properties.Reported.Contains("status"))
+            {
+                // if there is a status property, set the value status, don't use the Set method so we don't trigger a device twin property udpate
+                this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"]);
+            }
+            else // direction wasn't already set
+            {
+                // set direction of device via the setter so we update the device twin
+                this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
+            }
+        }
+            public void StartAllEvents()
         {
             _EventScheduler.StartAll(); 
         }

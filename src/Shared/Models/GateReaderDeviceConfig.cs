@@ -10,5 +10,6 @@ namespace Transportation.Demo.Shared.Models
         public string DeviceType { get; set; }
         public string initialDirection { get; set; }
         public int PercentOfWrongWay { get; set; }
+        public string Status { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
