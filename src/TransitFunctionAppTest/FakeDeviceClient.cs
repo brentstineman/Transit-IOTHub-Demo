@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Shared.Interfaces;
 
 namespace TransportationDemoTests
 {

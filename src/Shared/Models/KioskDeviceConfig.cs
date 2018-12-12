@@ -10,5 +10,6 @@ namespace Transportation.Demo.Shared.Models
         public string DeviceType { get; set; }
         public long InitialStockCount { get; set; }
         public long LowStockThreshold { get; set; }
+        public string Status { get; set; } = DeviceStatus.disabled.ToString();
     }
 }

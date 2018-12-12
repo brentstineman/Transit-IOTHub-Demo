@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
-using Transportation.Demo.Base.Interfaces;
+using System.Threading.Tasks;
+using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -18,6 +20,7 @@ namespace Transportation.Demo.Devices.Base
 
         protected string deviceId;
         protected string deviceType;
+        protected DeviceStatus status;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -31,11 +34,32 @@ namespace Transportation.Demo.Devices.Base
 
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
-
+            // When the device first registers, it should default to a "disabled" state
+            InitializeStatus(deviceConfig);
             // ?? validate device ID on instantiation ?? 
         }
 
-        public void StartAllEvents()
+        public void InitializeStatus(IDeviceConfig deviceConfig)
+        {
+            // set initial status. Use configuration value as default
+            string intialStatus = deviceConfig.Status;
+
+            // get twin 
+            var myTwinDynamic = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
+            var myTwin = myTwinDynamic as Twin;
+
+            if (myTwin != null && myTwin.Properties.Reported.Contains("status"))
+            {
+                // if there is a status property, set the value status, don't use the Set method so we don't trigger a device twin property udpate
+                this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"]);
+            }
+            else // status wasn't already set
+            {
+                // set status of device via the setter so we update the device twin
+                this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
+            }
+        }
+            public void StartAllEvents()
         {
             _EventScheduler.StartAll(); 
         }
@@ -64,5 +88,19 @@ namespace Transportation.Demo.Devices.Base
 
         }
 
+        public async Task SetDeviceStatus(DeviceStatus status)
+        {
+             this.status = status;
+            //Call the helper method to update the status property
+            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+            if (status == DeviceStatus.disabled)
+            {
+                StopAllEvents();
+            }
+        }
+        public DeviceStatus GetDeviceStatus()
+        {
+            return this.status;
+        }
     }
 }
