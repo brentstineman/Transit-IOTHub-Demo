@@ -2,6 +2,8 @@
 
 namespace Transportation.Demo.Shared.Models
 {
+    public enum DeviceStatus { enabled, disabled };
+
     public interface IDeviceConfig
     {
         string DeviceId { get; set; }

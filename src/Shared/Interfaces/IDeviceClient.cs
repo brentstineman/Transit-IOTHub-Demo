@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
-namespace Transportation.Demo.Base.Interfaces
+namespace Transportation.Demo.Shared.Interfaces
 {
     // Interface for sending & receiving messages to/from devices
     public interface IDeviceClient

@@ -6,14 +6,13 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Devices.Base
 {
-    public enum DeviceStatus { enabled, disabled };
-
     public class BaseDevice
     {
         protected IEventScheduler _EventScheduler;
@@ -40,22 +39,23 @@ namespace Transportation.Demo.Devices.Base
             // ?? validate device ID on instantiation ?? 
         }
 
-        public new void InitializeStatus(IDeviceConfig deviceConfig)
+        public void InitializeStatus(IDeviceConfig deviceConfig)
         {
             // set initial status. Use configuration value as default
             string intialStatus = deviceConfig.Status;
 
             // get twin 
-            var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
+            var myTwinDynamic = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
+            var myTwin = myTwinDynamic as Twin;
 
-            if (myTwin.Properties.Reported.Contains("status"))
+            if (myTwin != null && myTwin.Properties.Reported.Contains("status"))
             {
                 // if there is a status property, set the value status, don't use the Set method so we don't trigger a device twin property udpate
                 this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"]);
             }
-            else // direction wasn't already set
+            else // status wasn't already set
             {
-                // set direction of device via the setter so we update the device twin
+                // set status of device via the setter so we update the device twin
                 this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
             }
         }

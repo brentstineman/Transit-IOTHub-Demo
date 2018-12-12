@@ -11,6 +11,7 @@ using Microsoft.Azure.Devices.Client;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
+using Transportation.Demo.Shared;
 
 namespace Transportation.Demo.Functions
 {
@@ -23,19 +24,9 @@ namespace Transportation.Demo.Functions
             string status,
             ILogger log)
         {
-            DeviceStatus newStatus;
-            if (!Enum.TryParse(status, out newStatus))
-            {
-                return new BadRequestResult();
-            }
-            DeviceClient client = DeviceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"), deviceId);
-            if (client == null)
-            {
-                return new BadRequestResult();
-            }
-            var properyUpdate = new TwinCollection();
-            properyUpdate["status"] = newStatus;
-            await client.UpdateReportedPropertiesAsync(properyUpdate);
+            var client = new TransportationDeviceClient(Environment.GetEnvironmentVariable("IotHubConnectionString"), deviceId);
+            var action = new SetDeviceStatusAction(client, log);
+            await action.SetDeviceStatus(status);
             return new OkResult();
         }
     }

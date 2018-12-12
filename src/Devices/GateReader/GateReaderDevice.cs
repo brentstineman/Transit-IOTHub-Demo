@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
