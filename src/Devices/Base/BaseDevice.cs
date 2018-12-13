@@ -6,9 +6,10 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Transportation.Demo.Base.Interfaces;
+using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Devices.Base
 {
@@ -16,9 +17,11 @@ namespace Transportation.Demo.Devices.Base
     {
         protected IEventScheduler _EventScheduler;
         protected IDeviceClient _DeviceClient;
+        protected IDeviceConfig _deviceConfig;
 
         protected string deviceId;
         protected string deviceType;
+        protected DeviceStatus status;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -30,13 +33,33 @@ namespace Transportation.Demo.Devices.Base
             this._EventScheduler = eventScheduler;
             this._DeviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
+            this._deviceConfig = deviceConfig;
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
+
+            // ?? validate device ID on instantiation ?? 
         }
 
         public Task InitializeAsync()
         {
-            // we don't need to do anything for the base class, so just return
+            // set initial status. Use configuration value as default
+            string intialStatus = _deviceConfig.Status;
+
+            // get twin 
+            var myTwinDynamic = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
+            var myTwin = myTwinDynamic as Twin;
+
+            if (myTwin != null && myTwin.Properties.Reported.Contains("status"))
+            {
+                // if there is a status property, set the value status, don't use the Set method so we don't trigger a device twin property udpate
+                this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"]);
+            }
+            else // status wasn't already set
+            {
+                // set status of device via the setter so we update the device twin
+                this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -66,7 +89,21 @@ namespace Transportation.Demo.Devices.Base
 
             // Send the telemetry message
             this._DeviceClient.SendMessageAsync(messageString).Wait();
+        }
 
+        public async Task SetDeviceStatus(DeviceStatus status)
+        {
+             this.status = status;
+            //Call the helper method to update the status property
+            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+            if (status == DeviceStatus.disabled)
+            {
+                StopAllEvents();
+            }
+        }
+        public DeviceStatus GetDeviceStatus()
+        {
+            return this.status;
         }
 
     }

@@ -4,6 +4,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using Transportation.Demo.Devices.Base;
+using Transportation.Demo.Shared;
 using Microsoft.Azure.Devices.Client;
 using System.Threading.Tasks;
 using System.Text;

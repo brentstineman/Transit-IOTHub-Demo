@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Shared.Models;
+using Transportation.Demo.Shared;
 
 namespace Transportation.Demo.Devices.GateReader
 {

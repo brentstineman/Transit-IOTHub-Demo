@@ -41,7 +41,34 @@ namespace TransitFunctionAppTest
             Assert.IsFalse(simulatedEvent1.IsRunning);
             Assert.IsFalse(simulatedEvent2.IsRunning);
         }
+        [Test]
+        public void TestSetDeviceStatus()
+        {
+            BaseDeviceConfig deviceconfig = new BaseDeviceConfig()
+            {
+                DeviceId = "myFakeDevice",
+                DeviceType = "base"
 
+            };
+            FakeDeviceClient myClient = new FakeDeviceClient();
+            FakeEventScheduler myScheduler = new FakeEventScheduler();
+            FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
+            myScheduler.Add(simulatedEvent);
+            BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+            // make sure the default device status is disabled
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
+            device.SetDeviceStatus(DeviceStatus.enabled).Wait();
+            device.StartAllEvents();
+            // make sure the device status is enabled
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
+            Assert.AreEqual(myClient.twinProperties["status"], DeviceStatus.enabled);
+            // make sure StopAllEvents is called after setting device status to disabled
+            device.SetDeviceStatus(DeviceStatus.disabled).Wait();
+            Assert.IsFalse(simulatedEvent.IsRunning);
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
+            Assert.AreEqual(myClient.twinProperties["status"], DeviceStatus.disabled);
+
+        }
         private bool EmptyTimeEvent()
         {
             return true;

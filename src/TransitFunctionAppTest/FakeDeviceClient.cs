@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-using Transportation.Demo.Base.Interfaces;
 using Transportation.Demo.Shared;
+using Transportation.Demo.Shared.Interfaces;
 
 namespace TransportationDemoTests
 {
@@ -95,43 +95,6 @@ namespace TransportationDemoTests
 
         public Task<dynamic> GetDynamicDigitalTwinAsync()
         {
-            //{
-            //    "deviceId": "BrentGateReader",
-            //    "etag": "AAAAAAAAAAE=",
-            //    "deviceEtag": "ODEwMDMwNTY1",
-            //    "status": "enabled",
-            //    "statusUpdateTime": "0001-01-01T00:00:00",
-            //    "connectionState": "Connected",
-            //    "lastActivityTime": "2018-12-04T15:50:12.7708574",
-            //    "cloudToDeviceMessageCount": 0,
-            //    "authenticationType": "sas",
-            //    "x509Thumbprint": {
-            //        "primaryThumbprint": null,
-            //        "secondaryThumbprint": null
-            //    },
-            //    "version": 3,
-            //    "properties": {
-            //        "desired": {
-            //            "$metadata": {
-            //                "$lastUpdated": "2018-12-04T15:35:30.8539277Z"
-            //            },
-            //            "$version": 1
-            //        },
-            //        "reported": {
-            //            "GateDirection": "Out",
-            //            "$metadata": {
-            //                "$lastUpdated": "2018-12-04T15:50:49.9838118Z",
-            //                "GateDirection": {
-            //                    "$lastUpdated": "2018-12-04T15:50:49.9838118Z"
-            //                }
-            //            },
-            //            "$version": 2
-            //        }
-            //    },
-            //    "capabilities": {
-            //        "iotEdge": false
-            //    }
-            //}
             return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
         }
     }
