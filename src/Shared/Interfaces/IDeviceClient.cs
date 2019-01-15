@@ -13,7 +13,7 @@ namespace Transportation.Demo.Shared.Interfaces
         Task SendMessageBatchAsync(IEnumerable<string> msgs);
         Task<Message> ReceiveMessageAsync();
         Task RegisterDirectMethodAsync(MethodCallback methodHandler);
-        Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property);
+        Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property);
         Task<string> GetDigitalTwinAsync();
         Task<dynamic> GetDynamicDigitalTwinAsync();
 

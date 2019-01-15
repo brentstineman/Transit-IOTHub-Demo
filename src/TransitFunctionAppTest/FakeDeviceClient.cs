@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -68,7 +69,7 @@ namespace TransportationDemoTests
             return Task.CompletedTask;
         }
 
-        public Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
+        public Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
             // if the property already exists, update it
             if (fakeTwin.Properties.Reported.Contains(property.Key))
@@ -78,11 +79,11 @@ namespace TransportationDemoTests
             else
             {
                 // get current properties
-                dynamic newReportedProperties = fakeTwin.Properties.Reported.ToExpandoObject();
+                ExpandoObject newReportedProperties = fakeTwin.Properties.Reported.ToExpandoObject();
                 // add in our new one
                 newReportedProperties.TryAdd(property.Key, property.Value);
                 // save the properties back out
-                fakeTwin.Properties.Reported = new TwinCollection(newReportedProperties.ToExpandoObject(), null);
+                fakeTwin.Properties.Reported = new TwinCollection(JsonConvert.SerializeObject(newReportedProperties));
             }
 
             return Task.CompletedTask;
@@ -97,5 +98,6 @@ namespace TransportationDemoTests
         {
             return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
         }
+
     }
 }

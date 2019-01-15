@@ -54,12 +54,14 @@ namespace Transportation.Demo.Shared
             await deviceClient.SetMethodHandlerAsync(methodHandler.Method.Name, methodHandler, null);
         }
 
-        public async Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
+
+        public async Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
-            var reportedProperty = new TwinCollection();
-            reportedProperty[property.Key] = property.Value;
-            await deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
+            var tmpCollection = new TwinCollection();
+            tmpCollection[property.Key] = property.Value;
+            await deviceClient.UpdateReportedPropertiesAsync(tmpCollection);
         }
+
         public async Task<string> GetDigitalTwinAsync()
         {
             var twin = await deviceClient.GetTwinAsync();
@@ -72,5 +74,6 @@ namespace Transportation.Demo.Shared
             var dyn = twin.ToExpandoObject();
             return dyn;
         }
+
     }
 }

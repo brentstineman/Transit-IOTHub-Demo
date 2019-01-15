@@ -93,7 +93,7 @@ namespace Transportation.Demo.Devices.GateReader
             if (this.Direction != value)
             {
                 // set device twin property
-                await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
+                await this._DeviceClient.SetReportedDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
 
                 // set local cached value. Done after the device twin update so if it failed, we didn't update our local value
                 this.CurrentDirection = value;

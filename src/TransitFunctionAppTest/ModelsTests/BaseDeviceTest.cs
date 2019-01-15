@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Shared.Models;
@@ -11,16 +13,30 @@ namespace TransitFunctionAppTest
     [TestFixture]
     class BaseDeviceTest
     {
+        private BaseDeviceConfig deviceconfig;
+        private Twin fakeTwin;
+
+        public BaseDeviceTest()
+        {
+            deviceconfig = new BaseDeviceConfig()
+            {
+                DeviceId = "myFakeDevice",
+                DeviceType = DeviceType.TicketKiosk
+            };
+
+            // create a fake device twin
+            // set up device propeties
+            JObject myReportedProperties = new JObject();
+            // set reported properties
+            myReportedProperties.Add("status", DeviceStatus.disabled.ToString());
+
+            fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
+            fakeTwin.Properties.Reported = new TwinCollection(myReportedProperties, null);
+        }
 
         [Test]
         public void TestCreateBaseDevice()
         {
-            BaseDeviceConfig deviceconfig = new BaseDeviceConfig()
-            {
-                DeviceId = "myFakeDevice",
-                DeviceType = "base"
-
-            };
             FakeDeviceClient myClient = new FakeDeviceClient();
 
             TimedSimulatedEvent simulatedEvent1 = new TimedSimulatedEvent(2000, 1000, this.EmptyTimeEvent);
@@ -44,29 +60,27 @@ namespace TransitFunctionAppTest
         [Test]
         public void TestSetDeviceStatus()
         {
-            BaseDeviceConfig deviceconfig = new BaseDeviceConfig()
-            {
-                DeviceId = "myFakeDevice",
-                DeviceType = "base"
+            fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
+            fakeTwin.Properties.Reported = new TwinCollection(new JObject(), null);
 
-            };
-            FakeDeviceClient myClient = new FakeDeviceClient();
+            FakeDeviceClient myClient = new FakeDeviceClient(fakeTwin);
             FakeEventScheduler myScheduler = new FakeEventScheduler();
             FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
             myScheduler.Add(simulatedEvent);
             BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
             // make sure the default device status is disabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
+            // enabled the device and start all its events
             device.SetDeviceStatus(DeviceStatus.enabled).Wait();
             device.StartAllEvents();
             // make sure the device status is enabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
-            Assert.AreEqual(myClient.twinProperties["status"], DeviceStatus.enabled);
-            // make sure StopAllEvents is called after setting device status to disabled
+            Assert.AreEqual(DeviceStatus.enabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
+            // disabled the device and make sure events are not running
             device.SetDeviceStatus(DeviceStatus.disabled).Wait();
             Assert.IsFalse(simulatedEvent.IsRunning);
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
-            Assert.AreEqual(myClient.twinProperties["status"], DeviceStatus.disabled);
+            Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
 
         }
         private bool EmptyTimeEvent()

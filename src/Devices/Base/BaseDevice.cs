@@ -36,8 +36,7 @@ namespace Transportation.Demo.Devices.Base
             this._deviceConfig = deviceConfig;
             this.deviceId = deviceConfig.DeviceId;
             this.deviceType = deviceConfig.DeviceType;
-
-            // ?? validate device ID on instantiation ?? 
+            Enum.TryParse(deviceConfig.Status, out this.status);
         }
 
         public Task InitializeAsync()
@@ -95,7 +94,7 @@ namespace Transportation.Demo.Devices.Base
         {
              this.status = status;
             //Call the helper method to update the status property
-            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
+            await this._DeviceClient.SetReportedDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status.ToString()));
             if (status == DeviceStatus.disabled)
             {
                 StopAllEvents();

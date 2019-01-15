@@ -55,7 +55,7 @@ namespace Transportation.Demo.Functions
             }
             catch (Microsoft.Azure.Devices.Common.Exceptions.DeviceNotFoundException ex)
             {
-                return new BadRequestObjectResult($"Device '{deviceId}' either does not exist or is not responding");
+                return new BadRequestObjectResult($"Device '{deviceId}' either does not exist or is not responding: {ex.Message}");
             }
 
             return new OkObjectResult($"Device {deviceId} updated to new direction: {direction}");
