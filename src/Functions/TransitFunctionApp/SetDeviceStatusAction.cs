@@ -28,7 +28,7 @@ namespace Transportation.Demo.Functions
 
             if (!Enum.TryParse(status, out newStatus))
             {
-                throw new ArgumentException("device status must be  of 'direction' must be 'enabled' or 'disabled'");
+                throw new ArgumentException("device status must be 'enabled' or 'disabled'");
             }
 
             logger.LogInformation($" Queuing up job to set device status to {newStatus}");

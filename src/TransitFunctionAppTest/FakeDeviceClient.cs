@@ -99,5 +99,9 @@ namespace TransportationDemoTests
             return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
         }
 
+        public Task RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback methodHandler)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

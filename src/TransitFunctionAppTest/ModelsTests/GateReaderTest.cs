@@ -48,9 +48,6 @@ namespace TransportationDemoTests
             // set reported properties
             myReportedProperties.Add("GateDirection", "Out");
 
-            dynamic fakeTwin = new Microsoft.Azure.Devices.Shared.Twin("FakeDevice");
-            fakeTwin.Properties.Reported = new TwinCollection(myReportedProperties, null);
-
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
 

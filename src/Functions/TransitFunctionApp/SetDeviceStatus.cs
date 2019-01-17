@@ -19,7 +19,7 @@ namespace Transportation.Demo.Functions
     {
         [FunctionName("SetDeviceStatus")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/{DeviceId:guid}/enabled={status}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/{deviceId}/setproperty/status={status}")] HttpRequest req,
             string deviceId,
             string status,
             ILogger log)

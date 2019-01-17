@@ -71,13 +71,13 @@ namespace TransitFunctionAppTest
             // make sure the default device status is disabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
             // enabled the device and start all its events
-            device.SetDeviceStatus(DeviceStatus.enabled).Wait();
+            device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait();
             device.StartAllEvents();
             // make sure the device status is enabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
             Assert.AreEqual(DeviceStatus.enabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
             // disabled the device and make sure events are not running
-            device.SetDeviceStatus(DeviceStatus.disabled).Wait();
+            device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait();
             Assert.IsFalse(simulatedEvent.IsRunning);
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
             Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));

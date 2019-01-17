@@ -20,7 +20,7 @@ namespace Transportation.Demo.Functions
     {
         [FunctionName("SetGateDirection")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "devices/{deviceId}/direction={direction}"),] HttpRequest req, string deviceId, string direction,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "devices/{deviceId}/setdirection={direction}"),] HttpRequest req, string deviceId, string direction,
             ILogger log)
         {
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("IotHubConnectionString"));

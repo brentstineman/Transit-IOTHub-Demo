@@ -9,7 +9,7 @@ using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
-
+using Microsoft.Azure.Devices.Shared;
 
 /// <summary>
 /// 
@@ -47,6 +47,8 @@ namespace Transportation.Demo.Devices.GateReader
 
         public new Task InitializeAsync()
         {
+            base.InitializeAsync().Wait(); // call base method initialization
+
             // set initial direction
             string initialDirection = deviceConfig.initialDirection;            // use configuration value as default
             var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;            // get twin 
@@ -72,7 +74,15 @@ namespace Transportation.Demo.Devices.GateReader
             // recieve gate direction change commands
             this._DeviceClient.RegisterDirectMethodAsync(ReceiveCommandGateChange).Wait();
 
+            _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnGateDeviceDesiredPropertyChanged);
+
             return Task.CompletedTask;
+        }
+
+        private static async Task OnGateDeviceDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        {
+            Console.WriteLine("Gate Device Desired property change:");
+            Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
         }
 
         public GateDirection Direction

@@ -51,7 +51,7 @@ namespace Transportation.Demo.Shared
 
         public Task<string> StartTwinUpdateJobAsync(string query, Twin twin, DateTime startTime)
         {
-            string JobId = new Guid().ToString();
+            string JobId = Guid.NewGuid().ToString();
 
             JobResponse createJobResponse = jobClient.ScheduleTwinUpdateAsync(
               JobId, query, twin, DateTime.UtcNow,

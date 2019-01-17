@@ -56,8 +56,10 @@ namespace Transportation.Demo.Devices.Base
             else // status wasn't already set
             {
                 // set status of device via the setter so we update the device twin
-                this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
+                this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
             }
+
+            _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged);
 
             return Task.CompletedTask;
         }
@@ -90,7 +92,7 @@ namespace Transportation.Demo.Devices.Base
             this._DeviceClient.SendMessageAsync(messageString).Wait();
         }
 
-        public async Task SetDeviceStatus(DeviceStatus status)
+        public async Task SetDeviceStatusAsync(DeviceStatus status)
         {
              this.status = status;
             //Call the helper method to update the status property
@@ -103,6 +105,12 @@ namespace Transportation.Demo.Devices.Base
         public DeviceStatus GetDeviceStatus()
         {
             return this.status;
+        }
+
+        private static async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        {
+            Console.WriteLine("Desired property change:");
+            Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
         }
 
     }

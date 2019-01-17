@@ -54,6 +54,10 @@ namespace Transportation.Demo.Shared
             await deviceClient.SetMethodHandlerAsync(methodHandler.Method.Name, methodHandler, null);
         }
 
+        public async Task RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callbackHandler)
+        {
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(callbackHandler, null);
+        }
 
         public async Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
@@ -75,5 +79,9 @@ namespace Transportation.Demo.Shared
             return dyn;
         }
 
+        public Task RegisterDesiredPropertyUpdateCallbackAsync(MethodCallback methodHandler)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

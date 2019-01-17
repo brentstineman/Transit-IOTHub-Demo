@@ -18,15 +18,7 @@ namespace TransportationDemoTests
 
         public FakeJobClient(Twin deviceTwin = null)
         {
-            if (deviceTwin == null)
-            {
-                fakeTwin = new Microsoft.Azure.Devices.Shared.Twin("fakeDevice");
-            }
-            else
-            {
-                fakeTwin = deviceTwin;
-            }
-
+            this.fakeTwin = deviceTwin ?? new Microsoft.Azure.Devices.Shared.Twin("fakeDevice");
         }
 
         public Task<JobStatus> GetJobStatusAsync(string JobId)
