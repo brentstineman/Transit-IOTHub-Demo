@@ -9,6 +9,7 @@ using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Devices.Kiosk
 {
@@ -30,6 +31,14 @@ namespace Transportation.Demo.Devices.Kiosk
             // register any direct methods we're to recieve
             this._DeviceClient.RegisterDirectMethodAsync(ReceivePurchaseTicketResponse).Wait();
         }
+
+        public new Task InitializeAsync()
+        {
+            base.InitializeAsync().Wait();
+            _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(HandleDeviceEnablement);
+
+            return Task.CompletedTask;
+        }            
 
         public long CurrentStockLevel
         {
@@ -80,7 +89,10 @@ namespace Transportation.Demo.Devices.Kiosk
             string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
 
             // restart the purchase ticket event
-            this._EventScheduler.Start(0);
+            if (GetDeviceStatus() == DeviceStatus.enabled)
+            {
+                this._EventScheduler.Start(0);
+            }
 
             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
         }
@@ -131,6 +143,20 @@ namespace Transportation.Demo.Devices.Kiosk
             Console.WriteLine();
 
             return false; // don't restart timer
+        }
+
+        private async Task HandleDeviceEnablement(TwinCollection desiredProperties, object userContext)
+        {
+            if (desiredProperties.Contains("status"))
+            {
+                DeviceStatus desiredStatus = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), desiredProperties["status"].ToString());
+                if (desiredStatus == DeviceStatus.enabled)
+                {
+                    // reset stock count
+                    this.TicketStockCount = deviceConfig.InitialStockCount;
+                    Console.WriteLine("Resetting Stock levels.");
+                }
+            }
         }
     }
 }

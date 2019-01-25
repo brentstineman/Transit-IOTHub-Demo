@@ -25,7 +25,7 @@ namespace Transportation.Demo.Functions
         {
             foreach (var message in eventHubMessages)
             {
-                string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
+                 string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
                 // note, this approaches parses the JSON twice, which isn't very efficient but does help 
                 // demonstrate what we're trying to accomplish
@@ -34,29 +34,31 @@ namespace Transportation.Demo.Functions
 
                 if (message.Properties.ContainsKey("opType") && (message.Properties["opType"].ToString() == "updateTwin"))
                 {
+                    log.LogInformation($" Device Twin update event.");
+
                     string deviceId = message.Properties["deviceId"].ToString();
-                    string reportedGateDirection = obj["properties"]["reported"]["GateDirection"].ToString();
-                    // ** Sample message payload on updateTwin notification
-                    //{ 
-                    //    "version":27,
-                    //    "properties":
-                    //    {
-                    //        "reported":
-                    //        {
-                    //            "GateDirection":"Out",
-                    //            "$metadata":
-                    //            {
-                    //                "$lastUpdated":"2018-12-03T23:13:53.9823399Z",
-                    //                "GateDirection":
-                    //                {
-                    //                    "$lastUpdated":"2018-12-03T23:13:53.9823399Z"
-                    //                }
-                    //            },
-                    //            "$version":26
-                    //        }
-                    //    }
-                    //}
-                    log.LogInformation($" Gate Direction on Device {deviceId} reported change to {reportedGateDirection}.");
+                    
+                    // are there desired properties present?
+                    if (obj["properties"]["reported"] != null)
+                    {
+                        if (obj["properties"]["reported"]["GateDirection"] != null)
+                        {
+                            string reportedGateDirection = obj["properties"]["reported"]["GateDirection"].ToString();
+                            log.LogInformation($" Gate Direction on Device {deviceId} reported change to {reportedGateDirection}.");
+                        }
+                        if (obj["properties"]["reported"]["status"] != null)
+                        {
+                            log.LogInformation($" Desired Status of Device {deviceId} reported as {obj["properties"]["reported"]["status"].ToString()}.");
+                        }
+                    }
+                    else if (obj["properties"]["desired"] != null)
+                    {
+                        if (obj["properties"]["desired"]["status"] != null)
+                        {
+                            log.LogInformation($" Desired Status of Device {deviceId} set to {obj["properties"]["desired"]["status"].ToString()}.");
+                        }
+                    }
+
                 }
                 else
                 {

@@ -100,7 +100,7 @@ namespace Transportation.Demo.Shared
             // if we haven't already registerd a handler, set up our method to handle it. 
             if (desiredCallbacks.Count < 1)
             {
-                await deviceClient.SetDesiredPropertyUpdateCallbackAsync(callbackHandler, null);
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null);
             }
 
             // add the new handler
