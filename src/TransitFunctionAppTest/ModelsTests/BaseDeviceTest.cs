@@ -68,21 +68,56 @@ namespace TransitFunctionAppTest
             FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
             myScheduler.Add(simulatedEvent);
             BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+
             // make sure the default device status is disabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
-            // enabled the device and start all its events
+            
+            // enable the device and start all its events
             device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait();
             device.StartAllEvents();
             // make sure the device status is enabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
             Assert.AreEqual(DeviceStatus.enabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
-            // disabled the device and make sure events are not running
+            
+            // disable the device and make sure events are not running
+            device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait();
+            Assert.IsFalse(simulatedEvent.IsRunning);
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
+            Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
+
+            // make sure the device responds to desired state changes
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
+        }
+
+        [Test]
+        public void TestDesiredPropertyHandler()
+        {
+            fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
+            fakeTwin.Properties.Reported = new TwinCollection(new JObject(), null);
+            fakeTwin.Properties.Desired = new TwinCollection(new JObject(), null);
+
+            FakeDeviceClient myClient = new FakeDeviceClient(fakeTwin);
+            FakeEventScheduler myScheduler = new FakeEventScheduler();
+            FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
+            myScheduler.Add(simulatedEvent);
+            BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+
+
+            // enable the device and start all its events
+            device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait();
+            device.StartAllEvents();
+            // make sure the device status is enabled
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
+            Assert.AreEqual(DeviceStatus.enabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
+
+            // disable the device and make sure events are not running
             device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait();
             Assert.IsFalse(simulatedEvent.IsRunning);
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
             Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
 
         }
+
         private bool EmptyTimeEvent()
         {
             return true;

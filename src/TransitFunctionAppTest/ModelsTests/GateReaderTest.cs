@@ -42,7 +42,6 @@ namespace TransportationDemoTests
         [Test]
         public void TestBaseGateReaderDevice()
         {
-            // create a fake device twin
             // set up device propeties
             JObject myReportedProperties = new JObject();
             // set reported properties
@@ -189,13 +188,13 @@ namespace TransportationDemoTests
             device.InitializeAsync().Wait();
 
             // gate direction should be "Out" as fakeTwin properties should override device config
-            Assert.AreEqual(GateDirection.Out, device.Direction, $"Device gate direction is not correct, expected 'Out', found {device.Direction}");
+            Assert.AreEqual(GateDirection.In, device.Direction, $"Device gate direction is not correct, expected 'In', found {device.Direction}");
 
             TestContext.WriteLine(">> Testing the Device's Gate Direction change commands..");
 
             cmdGateDirectionUpdate commandGateDirectionUpdate = new cmdGateDirectionUpdate()
             {
-                Direction = GateDirection.In
+                Direction = GateDirection.Out
             };
 
             // call the gate change direction
@@ -207,12 +206,12 @@ namespace TransportationDemoTests
             MethodResponse myresult = fakeDeviceClient.directMethods[1](methodRequest, null).Result;
 
             // gate direction should be "In" now
-            Assert.AreEqual(GateDirection.In, device.Direction, $"Device gate direction is not correct, expected 'In', found {device.Direction}");
+            Assert.AreEqual(GateDirection.Out, device.Direction, $"Device gate direction is not correct, expected 'Out', found {device.Direction}");
 
             // check the device twin properties
             // ensures that the device is using the device client SetDigitalTwinPropertyAsync method for twin property updates
             GateDirection twinDirection = (GateDirection)Enum.Parse(typeof(GateDirection), fakeTwin.Properties.Reported["GateDirection"].ToString());
-            Assert.AreEqual(GateDirection.In, twinDirection, $"Device gate direction in the device twin is not correct, expected 'In', found {twinDirection}");
+            Assert.AreEqual(GateDirection.Out, twinDirection, $"Device gate direction in the device twin is not correct, expected 'Out', found {twinDirection}");
         }
     }
 }

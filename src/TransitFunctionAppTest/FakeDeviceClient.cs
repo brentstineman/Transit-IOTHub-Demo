@@ -16,6 +16,8 @@ namespace TransportationDemoTests
         public List<string> sendMessageLog = new List<string>();
         private Twin fakeTwin;
         public List<MethodCallback> directMethods = new List<MethodCallback>();
+        public static List<DesiredPropertyUpdateCallback> desiredCallbacks = new List<DesiredPropertyUpdateCallback>();
+
 
         public FakeDeviceClient(Twin deviceTwin = null)
         {
@@ -99,9 +101,11 @@ namespace TransportationDemoTests
             return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
         }
 
-        public Task RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback methodHandler)
+        // collects the various handlers
+        public async void RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callbackHandler)
         {
-            throw new System.NotImplementedException();
+            // add the new handler
+            desiredCallbacks.Add(callbackHandler);
         }
     }
 }

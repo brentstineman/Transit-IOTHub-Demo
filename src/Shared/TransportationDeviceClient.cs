@@ -12,6 +12,9 @@ namespace Transportation.Demo.Shared
 {
     public class TransportationDeviceClient : IDeviceClient
     {
+        private static DeviceClient deviceClient;
+        private static List<DesiredPropertyUpdateCallback> desiredCallbacks = new List<DesiredPropertyUpdateCallback>();
+
         public TransportationDeviceClient(string connectionString)
         {
             deviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
@@ -25,7 +28,6 @@ namespace Transportation.Demo.Shared
                 throw new ArgumentException($"Could not create the device client for device id [{deviceId}].");
             }
         }
-        private static DeviceClient deviceClient;
 
         public async Task SendMessageAsync(string msg)
         {
@@ -54,11 +56,6 @@ namespace Transportation.Demo.Shared
             await deviceClient.SetMethodHandlerAsync(methodHandler.Method.Name, methodHandler, null);
         }
 
-        public async Task RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callbackHandler)
-        {
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(callbackHandler, null);
-        }
-
         public async Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
             var tmpCollection = new TwinCollection();
@@ -79,9 +76,36 @@ namespace Transportation.Demo.Shared
             return dyn;
         }
 
-        public Task RegisterDesiredPropertyUpdateCallbackAsync(MethodCallback methodHandler)
+        // this method will process any desired property change events
+        private static async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
         {
-            throw new NotImplementedException();
+            List<Task> taskList = new List<Task>();
+
+            // add each handler to a task list for processing
+            foreach (DesiredPropertyUpdateCallback callbackMethod in desiredCallbacks)
+            {
+                taskList.Add(callbackMethod(desiredProperties, userContext));
+            }
+
+            // execute all tasks and wait for them to complete
+            Task.WaitAll(taskList.ToArray()); 
+
+            // return to caller
+            return;
         }
+
+        // this method lets you add a new desired property callback method to the internal array
+        public async void RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callbackHandler)
+        {
+            // if we haven't already registerd a handler, set up our method to handle it. 
+            if (desiredCallbacks.Count < 1)
+            {
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync(callbackHandler, null);
+            }
+
+            // add the new handler
+            desiredCallbacks.Add(callbackHandler);
+        }
+
     }
 }
