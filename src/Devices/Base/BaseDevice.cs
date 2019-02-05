@@ -41,7 +41,6 @@ namespace Transportation.Demo.Devices.Base
 
         public Task InitializeAsync()
         {
-            // set initial status. Use configuration value as default
             string initialStatus = string.Empty;
 
             // get twin 

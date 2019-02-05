@@ -77,7 +77,7 @@ namespace Transportation.Demo.Shared
         }
 
         // this method will process any desired property change events
-        private static async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        private static async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
         {
             List<Task> taskList = new List<Task>();
 
@@ -88,10 +88,7 @@ namespace Transportation.Demo.Shared
             }
 
             // execute all tasks and wait for them to complete
-            Task.WaitAll(taskList.ToArray()); 
-
-            // return to caller
-            return;
+            Task.WaitAll(taskList.ToArray());
         }
 
         // this method lets you add a new desired property callback method to the internal array
@@ -100,7 +97,7 @@ namespace Transportation.Demo.Shared
             // if we haven't already registerd a handler, set up our method to handle it. 
             if (desiredCallbacks.Count < 1)
             {
-                await deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null);
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync, null);
             }
 
             // add the new handler
