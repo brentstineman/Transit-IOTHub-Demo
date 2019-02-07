@@ -1,5 +1,7 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Text;
 using Transportation.Demo.Devices.Kiosk;
@@ -153,6 +155,7 @@ namespace TransportationDemoTests
 
             // create our test device
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
+            device.InitializeAsync().Wait();
 
             TestContext.WriteLine(string.Empty);
             TestContext.WriteLine(">> Purchasing tickets, shouldn't throw event");
@@ -199,6 +202,15 @@ namespace TransportationDemoTests
             methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
             // we expect 2 messages to have been sent
             Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 1);
+
+            // reset the device to make sure ticket stock is reset using the desired property callback option
+            device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait(); // disable the device
+            device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait(); // enable the device
+            // check the stock level 
+            Assert.AreEqual(deviceconfig.InitialStockCount, device.CurrentStockLevel, "Device stock levels were not reset back to initial after device rest");
         }
+
+
+
     }
 }

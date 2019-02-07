@@ -21,14 +21,15 @@ namespace TransitFunctionAppTest
             deviceconfig = new BaseDeviceConfig()
             {
                 DeviceId = "myFakeDevice",
-                DeviceType = DeviceType.TicketKiosk
+                DeviceType = DeviceType.TicketKiosk,
+                Status = DeviceStatus.enabled.ToString()
             };
 
             // create a fake device twin
             // set up device propeties
             JObject myReportedProperties = new JObject();
             // set reported properties
-            myReportedProperties.Add("status", DeviceStatus.disabled.ToString());
+            myReportedProperties.Add("status", deviceconfig.Status);
 
             fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
             fakeTwin.Properties.Reported = new TwinCollection(myReportedProperties, null);
@@ -46,8 +47,8 @@ namespace TransitFunctionAppTest
             myScheduler.Add(simulatedEvent1);
             myScheduler.Add(simulatedEvent2);
 
-
             BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+            device.InitializeAsync().Wait(); // initialize the device 
             device.StartAllEvents();
             // make sure the events have started
             Assert.IsTrue(simulatedEvent1.IsRunning);
@@ -60,6 +61,9 @@ namespace TransitFunctionAppTest
         [Test]
         public void TestSetDeviceStatus()
         {
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing device status..");
+
             fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
             fakeTwin.Properties.Reported = new TwinCollection(new JObject(), null);
 
@@ -67,26 +71,35 @@ namespace TransitFunctionAppTest
             FakeEventScheduler myScheduler = new FakeEventScheduler();
             FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
             myScheduler.Add(simulatedEvent);
+            deviceconfig.Status = DeviceStatus.disabled.ToString();
+
             BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+            device.InitializeAsync().Wait(); // initialize the device 
+
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> Testing default device status when there's no reported/desired device twin state..");
 
             // make sure the default device status is disabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
-            
+
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> enable the device and start its events..");
+
             // enable the device and start all its events
             device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait();
             device.StartAllEvents();
             // make sure the device status is enabled
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
             Assert.AreEqual(DeviceStatus.enabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
-            
+
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> disable the device and make sure events aren't running..");
+
             // disable the device and make sure events are not running
             device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait();
             Assert.IsFalse(simulatedEvent.IsRunning);
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
             Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
-
-            // make sure the device responds to desired state changes
-            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
         }
 
         [Test]
@@ -100,8 +113,11 @@ namespace TransitFunctionAppTest
             FakeEventScheduler myScheduler = new FakeEventScheduler();
             FakeTimedSimulatedEvent simulatedEvent = new FakeTimedSimulatedEvent();
             myScheduler.Add(simulatedEvent);
-            BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
 
+            // setup device to start as "disabled"
+            deviceconfig.Status = DeviceStatus.disabled.ToString(); 
+            BaseDevice device = new BaseDevice(deviceconfig, myClient, myScheduler);
+            device.InitializeAsync().Wait();
 
             // enable the device and start all its events
             device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait();
@@ -116,6 +132,17 @@ namespace TransitFunctionAppTest
             Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.disabled);
             Assert.AreEqual(DeviceStatus.disabled, (DeviceStatus)Enum.Parse(typeof(DeviceStatus), fakeTwin.Properties.Reported["status"].ToString()));
 
+            TestContext.WriteLine(string.Empty);
+            TestContext.WriteLine(">> update device state via device twin desired property update..");
+
+            // build a set of desired state properties
+            JObject desiredProperties = new JObject();
+            desiredProperties.Add("status", DeviceStatus.enabled.ToString());
+            // call the base device handler, simulating the triggering of a change event
+            myClient.OnDesiredPropertyChangedAsync(new TwinCollection(desiredProperties, null), null).Wait();
+
+            // make sure device is enabled
+            Assert.AreEqual(device.GetDeviceStatus(), DeviceStatus.enabled);
         }
 
         private bool EmptyTimeEvent()

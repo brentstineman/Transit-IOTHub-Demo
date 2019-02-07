@@ -106,6 +106,24 @@ namespace TransportationDemoTests
         {
             // add the new handler
             desiredCallbacks.Add(callbackHandler);
+
+            // Method must be flagged async due to interface signature, this line eliminates code warning 
+            await Task.Run(() => { });
+        }
+
+        // public method to allow the fake client to manually "trigger" the event handler callback methods
+        public async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
+        {
+            List<Task> taskList = new List<Task>();
+
+            // add each handler to a task list for processing
+            foreach (DesiredPropertyUpdateCallback callbackMethod in desiredCallbacks)
+            {
+                taskList.Add(callbackMethod(desiredProperties, userContext));
+            }
+
+            // execute all tasks and wait for them to complete
+            await Task.Run(() => Task.WaitAll(taskList.ToArray()));
         }
     }
 }

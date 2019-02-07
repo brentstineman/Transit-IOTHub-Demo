@@ -144,6 +144,18 @@ namespace Transportation.Demo.Devices.Kiosk
 
             return false; // don't restart timer
         }
+        public new async Task SetDeviceStatusAsync(DeviceStatus newStatus)
+        {
+            if (this.status != newStatus && newStatus == DeviceStatus.enabled)
+            {
+                // reset stock count
+                this.TicketStockCount = deviceConfig.InitialStockCount;
+                Console.WriteLine("Resetting Stock levels.");
+            }
+
+            // call base device method to ensure its not missed
+            await base.SetDeviceStatusAsync(newStatus);
+        }
 
         private async Task HandleDeviceEnablement(TwinCollection desiredProperties, object userContext)
         {
@@ -157,6 +169,9 @@ namespace Transportation.Demo.Devices.Kiosk
                     Console.WriteLine("Resetting Stock levels.");
                 }
             }
+
+            // hides compiler warning for async with no await
+            await Task.Run(() => { });
         }
     }
 }

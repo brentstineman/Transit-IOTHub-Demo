@@ -113,6 +113,7 @@ namespace Transportation.Demo.Devices.Base
 
         public async Task SetDeviceStatusAsync(DeviceStatus newStatus)
         {
+            // current status should always match last reported
             if (status != newStatus)  // only act if new status is different then existing
             {
                 this.status = newStatus; // change device status
@@ -144,15 +145,21 @@ namespace Transportation.Demo.Devices.Base
             return this.status;
         }
 
+        /// <summary>
+        /// This method is a callback method that will be triggered when a desired property change event is raised
+        /// </summary>
+        /// <param name="desiredProperties">a collection of the desired properties</param>
+        /// <param name="userContext">the user context of the property changes</param>
+        /// <returns></returns>
         private async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
         {
             Console.WriteLine("Desired property change occured.");
 
+            // if there's a "status" desired state, process it. 
             if (desiredProperties.Contains("status"))
             {
-                DeviceStatus desiredStatus = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), desiredProperties["status"].ToString());
-
-                await this.SetDeviceStatusAsync(desiredStatus);
+                // uset the SetDeviceStatus method which will handle any reported updates property changes that need to be made
+                await this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), desiredProperties["status"].ToString()));
             }
             //Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
         }

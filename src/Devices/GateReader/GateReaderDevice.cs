@@ -69,9 +69,9 @@ namespace Transportation.Demo.Devices.GateReader
             this._EventScheduler.Add(simulatedEvent);
 
             // register any direct methods we're to recieve
-            // recieve ticket validation results
+            // receive ticket validation results
             this._DeviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
-            // recieve gate direction change commands
+            // receive gate direction change commands
             this._DeviceClient.RegisterDirectMethodAsync(ReceiveCommandGateChange).Wait();
 
             _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnGateDeviceDesiredPropertyChanged);

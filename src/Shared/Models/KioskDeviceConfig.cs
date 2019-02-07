@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+
 namespace Transportation.Demo.Shared.Models
 {
     public class KioskDeviceConfig : IDeviceConfig

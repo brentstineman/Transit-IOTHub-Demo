@@ -42,11 +42,6 @@ namespace TransportationDemoTests
         [Test]
         public void TestBaseGateReaderDevice()
         {
-            // set up device propeties
-            JObject myReportedProperties = new JObject();
-            // set reported properties
-            myReportedProperties.Add("GateDirection", "Out");
-
             FakeDeviceClient fakeDeviceClient = new FakeDeviceClient();
             FakeEventScheduler fakeScheduler = new FakeEventScheduler();
 
@@ -188,7 +183,7 @@ namespace TransportationDemoTests
             device.InitializeAsync().Wait();
 
             // gate direction should be "Out" as fakeTwin properties should override device config
-            Assert.AreEqual(GateDirection.In, device.Direction, $"Device gate direction is not correct, expected 'In', found {device.Direction}");
+            Assert.AreEqual(GateDirection.Out, device.Direction, $"Device gate direction is not correct, expected 'In', found {device.Direction}");
 
             TestContext.WriteLine(">> Testing the Device's Gate Direction change commands..");
 

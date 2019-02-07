@@ -88,7 +88,7 @@ namespace Transportation.Demo.Shared
             }
 
             // execute all tasks and wait for them to complete
-            Task.WaitAll(taskList.ToArray());
+            await Task.Run(()=> Task.WaitAll(taskList.ToArray()));
         }
 
         // this method lets you add a new desired property callback method to the internal array
