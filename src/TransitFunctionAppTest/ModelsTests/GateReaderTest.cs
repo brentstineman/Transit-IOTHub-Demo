@@ -25,6 +25,7 @@ namespace TransportationDemoTests
             {
                 DeviceId = "myFakeDevice",
                 DeviceType = DeviceType.GateReader,
+                Status = "enabled",
                 initialDirection = "In",
                 PercentOfWrongWay = 0
             };
@@ -34,6 +35,7 @@ namespace TransportationDemoTests
             JObject myReportedProperties = new JObject();
             // set reported properties
             myReportedProperties.Add("GateDirection", "Out");
+            myReportedProperties.Add("status", deviceconfig.Status); // need to match so status update doesn't clobber the twin
 
             fakeTwin = new Microsoft.Azure.Devices.Shared.Twin(deviceconfig.DeviceId);
             fakeTwin.Properties.Reported = new TwinCollection(myReportedProperties, null);

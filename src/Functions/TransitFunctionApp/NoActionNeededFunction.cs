@@ -18,7 +18,7 @@ namespace Transportation.Demo.Functions
         [FunctionName("NoActionNeededFunction")]
         public static void Run(
             [
-            EventHubTrigger("%LowStockEventHub%", 
+            EventHubTrigger("%noactionneededEventhubName%", 
             Connection = "receiverConnectionString")
             ]
         EventData[] eventHubMessages, ILogger log)

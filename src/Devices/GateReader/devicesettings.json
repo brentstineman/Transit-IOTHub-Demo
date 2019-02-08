@@ -1,6 +1,7 @@
 {
-  "deviceId": "BrentGateReader",
+  "deviceId": "GateReaderDemo",
   "deviceType": "GateReader",
+  "Status": "enabled",
   "initialDirection": "In",
   "percentOfWrongWay": 5,
   "events": [

@@ -21,7 +21,7 @@ namespace Transportation.Demo.Devices.Base
 
         protected string deviceId;
         protected string deviceType;
-        protected DeviceStatus status;
+        protected DeviceStatus? status = null;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -33,42 +33,44 @@ namespace Transportation.Demo.Devices.Base
             this._EventScheduler = eventScheduler;
             this._DeviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
-            this._deviceConfig = deviceConfig;
+            this._deviceConfig = deviceConfig; // save for later
             this.deviceId = deviceConfig.DeviceId;
-            this.deviceType = deviceConfig.DeviceType;
-            Enum.TryParse(deviceConfig.Status, out this.status);
+            this.deviceType = deviceConfig.DeviceType;     
+            // device status is set during initialization
         }
 
         public Task InitializeAsync()
         {
-            string initialStatus = string.Empty;
 
             // get twin 
             var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
 
-            // check for a pre-existing status (either reported or desired)
+            // set initial status
             if (myTwin != null)
             {
+                // check if a status was previously reported
+                if (myTwin.Properties.Reported.Contains("status"))
+                {
+                    // update the status of this device, but don't update device twin
+                    this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"].ToString());
+                }
+                // check if there's a desired status that hasn't been applied yet
                 if (myTwin.Properties.Desired.Contains("status"))
                 {
-                    initialStatus = myTwin.Properties.Desired["status"].ToString();
-                    if (myTwin.Properties.Reported.Contains("status") && myTwin.Properties.Reported["status"] != initialStatus)
+                    string desirdeStatus = myTwin.Properties.Desired["status"].ToString(); // get desired state
+                                                                                          // if desired state is different then last reported state
+                    if (myTwin.Properties.Reported.Contains("status") && myTwin.Properties.Reported["status"] != desirdeStatus)
                     {
-                        this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), initialStatus)).Wait();
+                        // use full setter which will also update the device twin
+                        this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), desirdeStatus)).Wait();
                     }
-                    else
-                        this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), initialStatus);
-                }
-                else if (myTwin.Properties.Reported.Contains("status"))
-                {
-                    initialStatus = myTwin.Properties.Reported["status"].ToString();
-                    this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), initialStatus);
                 }
             }
-
-            if (initialStatus == String.Empty)
+            if (this.status == null) // if no status was set, must be first time startup for this device
             {
-                this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), _deviceConfig.Status)).Wait();
+                // use full setter which will also update the device twin and the initial status from the config file
+                this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), this._deviceConfig.Status)).Wait();
+
             }
 
             _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged);
@@ -140,7 +142,7 @@ namespace Transportation.Demo.Devices.Base
                
         }
 
-        public DeviceStatus GetDeviceStatus()
+        public DeviceStatus? GetDeviceStatus()
         {
             return this.status;
         }
