@@ -18,7 +18,7 @@ namespace Transportation.Demo.Functions
         [FunctionName("IssueTicket")]
         public static void Run(
             [
-            EventHubTrigger("%IssueTicketEventHub%",
+            EventHubTrigger("%IssueTicketEventHubName%",
             Connection = "receiverConnectionString")
             ]
             EventData[] eventHubMessages, ILogger log)
@@ -40,8 +40,7 @@ namespace Transportation.Demo.Functions
                     {
                         TransactionId = transactionId,
                         DeviceId = ticketRequestMessage.DeviceId,
-                        DeviceType = ticketRequestMessage.DeviceType,
-                        MessageType = ticketRequestMessage.MessageType,
+                        DeviceType = ticketRequestMessage.DeviceType
                     };
 
                     log.LogInformation($"Response Method: {methodName}");

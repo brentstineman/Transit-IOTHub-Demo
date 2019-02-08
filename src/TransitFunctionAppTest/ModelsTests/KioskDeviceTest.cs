@@ -1,8 +1,9 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Text;
-using TransitFunctionApp;
 using Transportation.Demo.Devices.Kiosk;
 using Transportation.Demo.Shared.Models;
 
@@ -19,7 +20,7 @@ namespace TransportationDemoTests
             deviceconfig = new KioskDeviceConfig()
             {
                 DeviceId = "myFakeDevice",
-                DeviceType = "Kiosk",
+                DeviceType = DeviceType.TicketKiosk,
                 InitialStockCount = 100,
                 LowStockThreshold = 98
             };
@@ -66,7 +67,6 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "Purchase",
                 TransactionId = "fakeId",
                 CreateTime = System.DateTime.UtcNow,
                 Price = 1,
@@ -149,12 +149,13 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "Purchase",
+                MessageType = MessageType.cmdPurchaseTicket,
                 IsApproved = true
             };
 
             // create our test device
             KioskDevice device = new KioskDevice(deviceconfig, fakeDeviceClient, fakeScheduler);
+            device.InitializeAsync().Wait();
 
             TestContext.WriteLine(string.Empty);
             TestContext.WriteLine(">> Purchasing tickets, shouldn't throw event");
@@ -182,7 +183,6 @@ namespace TransportationDemoTests
             {
                 DeviceId = deviceconfig.DeviceId,
                 DeviceType = deviceconfig.DeviceType,
-                MessageType = "LowStock",
                 StockLevel = (deviceconfig.LowStockThreshold-1),
             };
             // get actual message into an object so we can compare it
@@ -202,6 +202,15 @@ namespace TransportationDemoTests
             methodresult = fakeDeviceClient.directMethods[0](methodRequest, null).Result;
             // we expect 2 messages to have been sent
             Assert.AreEqual(fakeDeviceClient.sendMessageLog.Count, 1);
+
+            // reset the device to make sure ticket stock is reset using the desired property callback option
+            device.SetDeviceStatusAsync(DeviceStatus.disabled).Wait(); // disable the device
+            device.SetDeviceStatusAsync(DeviceStatus.enabled).Wait(); // enable the device
+            // check the stock level 
+            Assert.AreEqual(deviceconfig.InitialStockCount, device.CurrentStockLevel, "Device stock levels were not reset back to initial after device rest");
         }
+
+
+
     }
 }

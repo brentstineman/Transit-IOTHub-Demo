@@ -19,14 +19,14 @@ namespace Transportation.Demo.Functions
     {
         [FunctionName("SetDeviceStatus")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SetDeviceStatus/{DeviceId:guid}/{status}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "devices/{deviceId}/setproperty/status={status}")] HttpRequest req,
             string deviceId,
             string status,
             ILogger log)
         {
-            var client = new TransportationDeviceClient(Environment.GetEnvironmentVariable("IotHubConnectionString"), deviceId);
-            var action = new SetDeviceStatusAction(client, log);
-            await action.SetDeviceStatus(status);
+            var jobclient = new TransportationJobClient(Environment.GetEnvironmentVariable("IotHubConnectionString"));
+            var action = new SetDeviceStatusAction(jobclient, log);
+            await action.SetDeviceStatus(deviceId, status);
             return new OkResult();
         }
     }

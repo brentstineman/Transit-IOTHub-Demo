@@ -6,8 +6,8 @@
     "receiverConnectionString": "",
     "IotHubConnectionString": "",
     "PurchaseTicketEventhubName": "purchaseticket",
-    "LowStockEventHub": "lowstock",
-    "IssueTicketEventHub": "ticketissued",
-    "ValidateTicketEventhubName": "validateticket"
+    "IssueTicketEventHubName": "ticketissued",
+    "ValidateTicketEventhubName": "validateticket",
+    "noactionneededEventhubName": "noactionneeded"
   }
 }

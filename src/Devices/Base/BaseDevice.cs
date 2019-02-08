@@ -13,14 +13,15 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Transportation.Demo.Devices.Base
 {
-    public class BaseDevice
+    public class BaseDevice : ISimulatedDevice
     {
         protected IEventScheduler _EventScheduler;
         protected IDeviceClient _DeviceClient;
+        protected IDeviceConfig _deviceConfig;
 
         protected string deviceId;
         protected string deviceType;
-        protected DeviceStatus status;
+        protected DeviceStatus? status = null;
 
         public BaseDevice(IDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler)
         {
@@ -32,36 +33,61 @@ namespace Transportation.Demo.Devices.Base
             this._EventScheduler = eventScheduler;
             this._DeviceClient = client;  // Connect to the IoT hub using the MQTT protocol
 
+            this._deviceConfig = deviceConfig; // save for later
             this.deviceId = deviceConfig.DeviceId;
-            this.deviceType = deviceConfig.DeviceType;
-            // When the device first registers, it should default to a "disabled" state
-            InitializeStatus(deviceConfig);
-            // ?? validate device ID on instantiation ?? 
+            this.deviceType = deviceConfig.DeviceType;     
+            // device status is set during initialization
         }
 
-        public void InitializeStatus(IDeviceConfig deviceConfig)
+        public Task InitializeAsync()
         {
-            // set initial status. Use configuration value as default
-            string intialStatus = deviceConfig.Status;
 
             // get twin 
-            var myTwinDynamic = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
-            var myTwin = myTwinDynamic as Twin;
+            var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;
 
-            if (myTwin != null && myTwin.Properties.Reported.Contains("status"))
+            // set initial status
+            if (myTwin != null)
             {
-                // if there is a status property, set the value status, don't use the Set method so we don't trigger a device twin property udpate
-                this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"]);
+                // check if a status was previously reported
+                if (myTwin.Properties.Reported.Contains("status"))
+                {
+                    // update the status of this device, but don't update device twin
+                    this.status = (DeviceStatus)Enum.Parse(typeof(DeviceStatus), myTwin.Properties.Reported["status"].ToString());
+                }
+                // check if there's a desired status that hasn't been applied yet
+                if (myTwin.Properties.Desired.Contains("status"))
+                {
+                    string desirdeStatus = myTwin.Properties.Desired["status"].ToString(); // get desired state
+                                                                                          // if desired state is different then last reported state
+                    if (myTwin.Properties.Reported.Contains("status") && myTwin.Properties.Reported["status"] != desirdeStatus)
+                    {
+                        // use full setter which will also update the device twin
+                        this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), desirdeStatus)).Wait();
+                    }
+                }
             }
-            else // status wasn't already set
+            if (this.status == null) // if no status was set, must be first time startup for this device
             {
-                // set status of device via the setter so we update the device twin
-                this.SetDeviceStatus((DeviceStatus)Enum.Parse(typeof(DeviceStatus), intialStatus)).Wait();
+                // use full setter which will also update the device twin and the initial status from the config file
+                this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), this._deviceConfig.Status)).Wait();
+
             }
+
+            _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged);
+
+            return Task.CompletedTask;
         }
-            public void StartAllEvents()
+
+        public void StartAllEvents()
         {
-            _EventScheduler.StartAll(); 
+            // only start the events if the device is enabled. 
+            if (this.status == DeviceStatus.enabled)
+            {
+                _EventScheduler.StartAll(); 
+            }
+            else {
+                Console.WriteLine("Device disabled, event start aborted.");
+            }
         }
 
         public void StopAllEvents()
@@ -85,22 +111,60 @@ namespace Transportation.Demo.Devices.Base
 
             // Send the telemetry message
             this._DeviceClient.SendMessageAsync(messageString).Wait();
-
         }
 
-        public async Task SetDeviceStatus(DeviceStatus status)
+        public async Task SetDeviceStatusAsync(DeviceStatus newStatus)
         {
-             this.status = status;
-            //Call the helper method to update the status property
-            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status));
-            if (status == DeviceStatus.disabled)
+            // current status should always match last reported
+            if (status != newStatus)  // only act if new status is different then existing
             {
-                StopAllEvents();
+                this.status = newStatus; // change device status
+
+                //Call the helper method to update the status property
+                await this._DeviceClient.SetReportedDigitalTwinPropertyAsync(new KeyValuePair<string, object>("status", this.status.ToString()));
+                if (status == DeviceStatus.disabled)
+                {
+                    Console.WriteLine("Device disabled, stopping all events.");
+
+                    StopAllEvents();
+                }
+                else // we're enabling the device
+                {
+                    Console.WriteLine("Device enabled, starting all events.");
+
+                    StartAllEvents();
+                }
             }
+            else // status was the same, disregard
+            {
+                Console.Write("Device status change ignored, new status is same as old");
+            }
+               
         }
-        public DeviceStatus GetDeviceStatus()
+
+        public DeviceStatus? GetDeviceStatus()
         {
             return this.status;
         }
+
+        /// <summary>
+        /// This method is a callback method that will be triggered when a desired property change event is raised
+        /// </summary>
+        /// <param name="desiredProperties">a collection of the desired properties</param>
+        /// <param name="userContext">the user context of the property changes</param>
+        /// <returns></returns>
+        private async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        {
+            Console.WriteLine("Desired property change occured.");
+
+            // if there's a "status" desired state, process it. 
+            if (desiredProperties.Contains("status"))
+            {
+                // uset the SetDeviceStatus method which will handle any reported updates property changes that need to be made
+                await this.SetDeviceStatusAsync((DeviceStatus)Enum.Parse(typeof(DeviceStatus), desiredProperties["status"].ToString()));
+            }
+            //Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
+        }
+
     }
 }

@@ -12,12 +12,14 @@ namespace TransitFunctionApp
     {
         IInvokeDeviceMethod serviceClient;
         string payloadMessage;
+        int failRate;
         ILogger log;
 
         // Use the IInvokeDeviceMethod from the caller to allow for dependency injection.
-        public PurchaseTicketAction(IInvokeDeviceMethod client, string payload, ILogger logger)
+        public PurchaseTicketAction(IInvokeDeviceMethod client, int failRate, string payload, ILogger logger)
         {
             serviceClient = client;
+            this.failRate = failRate;
             payloadMessage = payload;
             log = logger;
         }
@@ -26,7 +28,7 @@ namespace TransitFunctionApp
         {
             // 95% chance that ticket purchase is approved
             Random gen = new Random();
-            bool purchaseApproved = gen.Next(100) <= 95;
+            bool purchaseApproved = gen.Next(100) <= (100- failRate);
 
             // process each message
             PurchaseTicketRequest ticketRequestMessage = JsonConvert.DeserializeObject<PurchaseTicketRequest>(payloadMessage);

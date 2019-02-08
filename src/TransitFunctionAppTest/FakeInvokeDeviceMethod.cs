@@ -25,8 +25,13 @@ namespace TransitFunctionAppTest
         }
         public Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod)
         {
+            var result = new CloudToDeviceMethodResult()
+            {
+                Status = 200,
+            };
+
             invocations.Add(new InvocationInfo() { device = deviceId, module = "", method = cloudToDeviceMethod });
-            return Task<CloudToDeviceMethodResult>.Factory.StartNew(() => null);
+            return Task<CloudToDeviceMethodResult>.Factory.StartNew(() => result);
         }
 
         public Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)

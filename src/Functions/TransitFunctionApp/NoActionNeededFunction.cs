@@ -1,6 +1,5 @@
 using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,45 +15,84 @@ namespace Transportation.Demo.Functions
     /// </summary>
     public static class NoActionNeededFunction
     {
-        [FunctionName("LowStockFunction")]
+        [FunctionName("NoActionNeededFunction")]
         public static void Run(
             [
-            EventHubTrigger("%LowStockEventHub%", 
+            EventHubTrigger("%noactionneededEventhubName%", 
             Connection = "receiverConnectionString")
             ]
         EventData[] eventHubMessages, ILogger log)
         {
             foreach (var message in eventHubMessages)
             {
-                string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
+                 string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
                 // note, this approaches parses the JSON twice, which isn't very efficient but does help 
                 // demonstrate what we're trying to accomplish
                 var obj = JObject.Parse(messagePayload); // get a dynamic object based on the msg payload
                 string msgType = (string)obj["MessageType"];
 
-                switch (msgType)
+                if (message.Properties.ContainsKey("opType") && (message.Properties["opType"].ToString() == "updateTwin"))
                 {
-                    case "LowStock":
-                        // parse a low stock message
-                        LowStockRequest lowStockMsg = JsonConvert.DeserializeObject<LowStockRequest>(messagePayload);
+                    log.LogInformation($" Device Twin update event.");
 
-                        log.LogWarning($" !!!!! Low Stock Alert !!!! \n\t DeviceID - {lowStockMsg.DeviceId} " +
-                            $"\n\t Time - {lowStockMsg.CreateTime}" +
-                            $"\n\t Current Stock Level - {lowStockMsg.StockLevel}");
+                    string deviceId = message.Properties["deviceId"].ToString();
+                    
+                    // are there desired properties present?
+                    if (obj["properties"]["reported"] != null)
+                    {
+                        if (obj["properties"]["reported"]["GateDirection"] != null)
+                        {
+                            string reportedGateDirection = obj["properties"]["reported"]["GateDirection"].ToString();
+                            log.LogInformation($" Gate Direction on Device {deviceId} reported change to {reportedGateDirection}.");
+                        }
+                        if (obj["properties"]["reported"]["status"] != null)
+                        {
+                            log.LogInformation($" Desired Status of Device {deviceId} reported as {obj["properties"]["reported"]["status"].ToString()}.");
+                        }
+                    }
+                    else if (obj["properties"]["desired"] != null)
+                    {
+                        if (obj["properties"]["desired"]["status"] != null)
+                        {
+                            log.LogInformation($" Desired Status of Device {deviceId} set to {obj["properties"]["desired"]["status"].ToString()}.");
+                        }
+                    }
 
-                        break;
-                    case "GateOpened":
-                        // parse a GateOpened
-                        GateOpenedNotification gateOpenedMsg = JsonConvert.DeserializeObject<GateOpenedNotification>(messagePayload);
-
-                        log.LogInformation($" Gate Opened on Device !!!! \n\t DeviceID - {gateOpenedMsg.DeviceId} ");
-
-                        break;
-                    default:
-                        break;
                 }
+                else
+                {
+                    switch (msgType)
+                    {
+                        case MessageType.eventLowStock:
+                            // parse a low stock message
+                            LowStockRequest lowStockMsg = JsonConvert.DeserializeObject<LowStockRequest>(messagePayload);
 
+                            log.LogWarning($" !!!!! Low Stock Alert !!!! \n\t DeviceID - {lowStockMsg.DeviceId} " +
+                                $"\n\t Time - {lowStockMsg.CreateTime}" +
+                                $"\n\t Current Stock Level - {lowStockMsg.StockLevel}");
+
+                            break;
+                        case MessageType.eventTicketIssued:
+                            // parse a ticket issued event
+                            IssueTicketRequest ticketIssued = JsonConvert.DeserializeObject<IssueTicketRequest>(messagePayload);
+
+                            log.LogInformation($" Ticket Issued by device {ticketIssued.DeviceId} ");
+
+                            break;
+                        case MessageType.eventGateOpened:
+                            // parse a GateOpened
+                            GateOpenedNotification gateOpenedMsg = JsonConvert.DeserializeObject<GateOpenedNotification>(messagePayload);
+
+                            log.LogInformation($" Gate Opened on Device {gateOpenedMsg.DeviceId} ");
+
+                            break;
+                        default:
+                            log.LogError($" Unknown message recieved !!!! \n\t {messagePayload} ");
+
+                            break;
+                    }
+                }
             }
         }
     }

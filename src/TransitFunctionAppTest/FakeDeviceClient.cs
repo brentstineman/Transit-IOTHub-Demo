@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Transportation.Demo.Shared;
 using Transportation.Demo.Shared.Interfaces;
 
 namespace TransportationDemoTests
@@ -12,9 +14,24 @@ namespace TransportationDemoTests
     {
         private Queue<Message> messages = new Queue<Message>();
         public List<string> sendMessageLog = new List<string>();
-        public Dictionary<string, object> twinProperties = new Dictionary<string, object>();
+        private Twin fakeTwin;
         public List<MethodCallback> directMethods = new List<MethodCallback>();
+        public static List<DesiredPropertyUpdateCallback> desiredCallbacks = new List<DesiredPropertyUpdateCallback>();
 
+
+        public FakeDeviceClient(Twin deviceTwin = null)
+        {
+
+            if (deviceTwin == null)
+            {
+                fakeTwin = new Microsoft.Azure.Devices.Shared.Twin("fakeDevice");
+            }
+            else
+            {
+                fakeTwin = deviceTwin;
+            }
+
+        }
 
         public void AddFakeMessage(Stream stream)
         {
@@ -54,15 +71,21 @@ namespace TransportationDemoTests
             return Task.CompletedTask;
         }
 
-        public Task SetDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
+        public Task SetReportedDigitalTwinPropertyAsync(KeyValuePair<string, object> property)
         {
-            if (twinProperties.ContainsKey(property.Key))
+            // if the property already exists, update it
+            if (fakeTwin.Properties.Reported.Contains(property.Key))
             {
-                twinProperties[property.Key] = property.Value;
+                fakeTwin.Properties.Reported[property.Key] = property.Value;
             }
             else
             {
-                twinProperties.Add(property.Key, property.Value);
+                // get current properties
+                ExpandoObject newReportedProperties = fakeTwin.Properties.Reported.ToExpandoObject();
+                // add in our new one
+                newReportedProperties.TryAdd(property.Key, property.Value);
+                // save the properties back out
+                fakeTwin.Properties.Reported = new TwinCollection(JsonConvert.SerializeObject(newReportedProperties));
             }
 
             return Task.CompletedTask;
@@ -70,16 +93,37 @@ namespace TransportationDemoTests
 
         public Task<string> GetDigitalTwinAsync()
         {
-            //TODO: implement method
-
-            return Task<string>.Factory.StartNew(() => string.Empty);
+            return Task<string>.Factory.StartNew(() => JsonConvert.SerializeObject(fakeTwin, Formatting.Indented));
         }
 
         public Task<dynamic> GetDynamicDigitalTwinAsync()
         {
-            //TODO: implement method
+            return Task<dynamic>.Factory.StartNew(() => fakeTwin.ToExpandoObject());
+        }
 
-            return Task<dynamic>.Factory.StartNew(() => new System.Dynamic.ExpandoObject());
+        // collects the various handlers
+        public async void RegisterDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callbackHandler)
+        {
+            // add the new handler
+            desiredCallbacks.Add(callbackHandler);
+
+            // Method must be flagged async due to interface signature, this line eliminates code warning 
+            await Task.Run(() => { });
+        }
+
+        // public method to allow the fake client to manually "trigger" the event handler callback methods
+        public async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
+        {
+            List<Task> taskList = new List<Task>();
+
+            // add each handler to a task list for processing
+            foreach (DesiredPropertyUpdateCallback callbackMethod in desiredCallbacks)
+            {
+                taskList.Add(callbackMethod(desiredProperties, userContext));
+            }
+
+            // execute all tasks and wait for them to complete
+            await Task.Run(() => Task.WaitAll(taskList.ToArray()));
         }
     }
 }

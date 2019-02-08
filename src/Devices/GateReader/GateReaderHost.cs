@@ -23,6 +23,8 @@ namespace Transportation.Demo.Devices.GateReader
             GateReaderDeviceConfig deviceConfig = JsonConvert.DeserializeObject<GateReaderDeviceConfig>(ConfigurationHandler.GetDeviceRuntimeSettings("deviceConfig"));
             // create our simulated device
             myGateReader = new GateReaderDevice(deviceConfig, myClient, myScheduler);
+            // initialize the device, setting up initial connections
+            myGateReader.InitializeAsync().Wait();
 
             // start the device running
             myGateReader.StartAllEvents(); 

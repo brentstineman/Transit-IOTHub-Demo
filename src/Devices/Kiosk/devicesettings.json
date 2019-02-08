@@ -1,7 +1,8 @@
 {
-  "verion":  "1.0.0",
-  "deviceId": "BrentTicketKiosk",
+  "verion": "1.0.0",
+  "deviceId": "TicketKioskDemo",
   "deviceType": "TicketKiosk",
+  "Status": "disabled",
   "initialStockCount": 100,
   "lowStockThreshold": 95,
   "events": [

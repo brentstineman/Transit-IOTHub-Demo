@@ -9,7 +9,7 @@ using Transportation.Demo.Shared.Interfaces;
 using Transportation.Demo.Devices.Base;
 using Transportation.Demo.Devices.Base.Interfaces;
 using Transportation.Demo.Shared.Models;
-
+using Microsoft.Azure.Devices.Shared;
 
 /// <summary>
 /// 
@@ -30,19 +30,38 @@ namespace Transportation.Demo.Devices.GateReader
 {
     public class GateReaderDevice : BaseDevice
     {
-        public enum GateDirection { In, Out };
-
         private GateDirection CurrentDirection;
         private GateReaderDeviceConfig deviceConfig;
 
+        /// <summary>
+        /// Device class constructor, calls base constructor and starts loading device values. 
+        /// Accepts a device config, client, and event scheduler. The later 2 are externalized to make
+        /// unit testing of the device easier. 
+        /// </summary>
         public GateReaderDevice(GateReaderDeviceConfig deviceConfig, IDeviceClient client, IEventScheduler eventScheduler) 
             : base(deviceConfig, client, eventScheduler)
         {
             // save device configuration
             this.deviceConfig = deviceConfig;
+        }
+
+        public new Task InitializeAsync()
+        {
+            base.InitializeAsync().Wait(); // call base method initialization
 
             // set initial direction
-            this.SetDirectionAsync((GateDirection)Enum.Parse(typeof(GateDirection), deviceConfig.initialDirection)).Wait();
+            string initialDirection = deviceConfig.initialDirection;            // use configuration value as default
+            var myTwin = _DeviceClient.GetDynamicDigitalTwinAsync().Result;            // get twin 
+            if (myTwin.Properties.Reported.Contains("GateDirection"))
+            {         // if there is a diretion property
+                // set the value direction, don't use the Set method so we don't trigger a device twin property udpate
+                CurrentDirection = (GateDirection)Enum.Parse(typeof(GateDirection), initialDirection = myTwin.Properties.Reported["GateDirection"]);
+            }
+            else // direction wasn't already set
+            {
+                // set direction of device via the setter so we update the device twin
+                this.SetDirectionAsync((GateDirection)Enum.Parse(typeof(GateDirection), initialDirection)).Wait();
+            }
 
             TimedSimulatedEvent simulatedEvent = new TimedSimulatedEvent(2500, 1000, this.SimulatedTicketSwipeOccured);
 
@@ -50,8 +69,20 @@ namespace Transportation.Demo.Devices.GateReader
             this._EventScheduler.Add(simulatedEvent);
 
             // register any direct methods we're to recieve
+            // receive ticket validation results
             this._DeviceClient.RegisterDirectMethodAsync(ReceiveTicketValidationResponse).Wait();
+            // receive gate direction change commands
+            this._DeviceClient.RegisterDirectMethodAsync(ReceiveCommandGateChange).Wait();
 
+            _DeviceClient.RegisterDesiredPropertyUpdateCallbackAsync(OnGateDeviceDesiredPropertyChanged);
+
+            return Task.CompletedTask;
+        }
+
+        private static async Task OnGateDeviceDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        {
+            Console.WriteLine("Gate Device Desired property change:");
+            Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
         }
 
         public GateDirection Direction
@@ -67,11 +98,16 @@ namespace Transportation.Demo.Devices.GateReader
         /// <returns></returns>
         public async Task SetDirectionAsync(GateDirection value)
         {
-            // set device twin property
-            await this._DeviceClient.SetDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
 
-            // set local cached value. Done after the device twin update so if it failed, we didn't update our local value
-            this.CurrentDirection = value;
+            // if the direction is different then what we've had before...
+            if (this.Direction != value)
+            {
+                // set device twin property
+                await this._DeviceClient.SetReportedDigitalTwinPropertyAsync(new KeyValuePair<string, object>("GateDirection", value.ToString()));
+
+                // set local cached value. Done after the device twin update so if it failed, we didn't update our local value
+                this.CurrentDirection = value;
+            }
 
             return;
         }
@@ -101,7 +137,6 @@ namespace Transportation.Demo.Devices.GateReader
                 {
                     DeviceId = this.deviceId,
                     DeviceType = this.deviceType,
-                    MessageType = "ValdiateTicket",
                     TransactionId = Guid.NewGuid().ToString(),
                     CreateTime = System.DateTime.UtcNow,
                     MethodName = "ReceiveTicketValidationResponse" // must match callback method
@@ -156,6 +191,30 @@ namespace Transportation.Demo.Devices.GateReader
         }
 
         /// <summary>
+        /// This method is called by Azure IOT Hub and represents a direct method call to the device
+        /// This is the response to 'SimulatedTicketSwipeOccured' request for a ticket validation
+        /// </summary>
+        private Task<MethodResponse> ReceiveCommandGateChange(MethodRequest methodRequest, object userContext)
+        {
+            var data = Encoding.UTF8.GetString(methodRequest.Data);
+            cmdGateDirectionUpdate directionCommand = JsonConvert.DeserializeObject<cmdGateDirectionUpdate>(data);
+
+            var json = JObject.Parse(data);
+
+            Console.WriteLine("Executed direct method: " + methodRequest.Name);
+            Console.WriteLine($"Transaction Id: {directionCommand.TransactionId}");
+            Console.WriteLine($"MessageType: {directionCommand.MessageType} = Direction: {directionCommand.Direction}");
+            Console.WriteLine();
+
+            // update the gate direction
+            this.SetDirectionAsync(directionCommand.Direction).Wait();
+
+            // Acknowlege the direct method call with a 200 success message
+            string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
+            return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
+        }
+
+        /// <summary>
         /// This is a fire and forget method that sends a message to the cloud to let it know the gate was opened.
         /// This message will be sent if the 'ReceivedTicketValidationResponse' method got a "ticket approved" response
         /// </summary>
@@ -165,7 +224,6 @@ namespace Transportation.Demo.Devices.GateReader
             {
                 DeviceId = this.deviceId,
                 DeviceType = this.deviceType,
-                MessageType = "GateOpened",
                 TransactionId = responsePayload.TransactionId,
                 CreateTime = System.DateTime.UtcNow
             };
